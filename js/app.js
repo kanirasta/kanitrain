@@ -7,7 +7,7 @@ import {
 } from './plan.js';
 import { unlockAudio, sound, buzz, keepAwake, isStandalone, isIOS } from './device.js';
 
-export const BUILD = '2026-11-23e';
+export const BUILD = '2026-11-23f';
 const $app = document.getElementById('app');
 const $sheet = document.getElementById('sheet');
 
