@@ -42,7 +42,7 @@ export function resolveItem(item, location = store.settings().location, owned = 
   if (location === 'gym' || !missingFor(ex, owned).length) return { exId: ex.id, swap: null, missing: [] };
   for (const alt of ex.alternatives || []) {
     const a = data.ex[alt.exerciseId];
-    if (a && !missingFor(a, owned).length) return { exId: a.id, swap: { from: ex.id, fit: alt.fit, note: alt.note }, missing: [] };
+    if (a && !missingFor(a, owned).length) return { exId: a.id, swap: { from: ex.id, fit: alt.fit, reason: alt.reason || null, note: alt.note }, missing: [] };
   }
   return { exId: ex.id, swap: null, missing: missingFor(ex, owned) };
 }
@@ -54,8 +54,10 @@ export function homeReport(day, owned = ownedTypes()) {
     if (r.swap) swaps.push({ ...r.swap, to: r.exId, block: b.id });
     if (r.missing.length) missing.push({ exId: r.exId, needs: r.missing, block: b.id });
   }
-  const partial = swaps.filter(s => s.fit === 'partial');
-  return { swaps, missing, partial, gymBetter: missing.length > 0 || partial.length > 0 };
+  // Load-only gaps (lighter weights than the plan) don't send you to the gym: fine while building up.
+  const partial = swaps.filter(s => s.fit === 'partial' && s.reason !== 'load');
+  const lighter = swaps.filter(s => s.fit === 'partial' && s.reason === 'load');
+  return { swaps, missing, partial, lighter, gymBetter: missing.length > 0 || partial.length > 0 };
 }
 // Equipment needed for a day: [{label groups, owned}] for the exercises actually done there.
 export function equipmentNeeded(day, location = store.settings().location, owned = ownedTypes()) {

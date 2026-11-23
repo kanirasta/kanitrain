@@ -1621,9 +1621,10 @@
      "exerciseId": "landmine_press_single",
      "fit": "partial",
      "note": {
-      "en": "No bench at home. The landmine press hits the upper chest at a similar angle, but lighter.",
-      "es": "Sin banco en casa. El landmine trabaja el pecho alto en un ángulo parecido, pero más liviano."
-     }
+      "en": "No bench. The landmine press hits the upper chest at a similar angle. Feet-elevated push-ups also work.",
+      "es": "Sin banco. El landmine trabaja el pecho alto en un ángulo parecido. Las flexiones con pies elevados también sirven."
+     },
+     "reason": "load"
     }
    ]
   },
@@ -1713,7 +1714,8 @@
      "note": {
       "en": "No squat rack and only 10 kg dumbbells, so the load is much lower. Slow tempo helps.",
       "es": "Sin rack y con mancuernas de 10 kg la carga es mucho menor. El tempo lento ayuda."
-     }
+     },
+     "reason": "load"
     }
    ]
   },
@@ -2345,7 +2347,8 @@
     {
      "anyOf": [
       "box",
-      "flat_bench"
+      "flat_bench",
+      "couch_chair"
      ],
      "optional": false
     },
@@ -2429,7 +2432,8 @@
     {
      "anyOf": [
       "flat_bench",
-      "box"
+      "box",
+      "couch_chair"
      ],
      "optional": false
     }
@@ -3127,11 +3131,20 @@
    },
    "alternatives": [
     {
+     "exerciseId": "db_hip_thrust_couch",
+     "fit": "partial",
+     "reason": "load",
+     "note": {
+      "en": "Back on the couch edge instead of a bench, with a dumbbell instead of the bar. Lighter, fine while you build up.",
+      "es": "Espalda en el borde del sillón en vez del banco, con mancuerna en vez de barra. Más liviano, alcanza mientras progresás."
+     }
+    },
+    {
      "exerciseId": "sl_glute_bridge_floor",
      "fit": "partial",
      "note": {
-      "en": "No bench or pad and the bar only goes to 12.5 kg. Single-leg bridges load the glutes better, left first.",
-      "es": "Sin banco ni almohadilla y la barra llega a 12,5 kg. El puente a una pierna carga mejor los glúteos, empezando por la izquierda."
+      "en": "No couch or chair listed. Single-leg bridges load the glutes better, left first.",
+      "es": "Sin sillón ni silla en tu lista. El puente a una pierna carga mejor los glúteos, empezando por la izquierda."
      }
     }
    ]
@@ -4089,7 +4102,8 @@
    "equipment": [
     {
      "anyOf": [
-      "flat_bench"
+      "flat_bench",
+      "couch_chair"
      ],
      "optional": false
     },
@@ -4466,7 +4480,8 @@
      "note": {
       "en": "Week 3 asks for heavier loads than your 10 kg dumbbells.",
       "es": "La semana 3 pide más carga que tus mancuernas de 10 kg."
-     }
+     },
+     "reason": "load"
     }
    ]
   },
@@ -4787,7 +4802,8 @@
      "note": {
       "en": "No leg press and 10 kg max, so the load is much lower.",
       "es": "Sin prensa y con 10 kg como máximo, la carga es mucho menor."
-     }
+     },
+     "reason": "load"
     }
    ]
   },
@@ -6129,6 +6145,91 @@
      "channel": "Functional AF",
      "verified": "2026-11-23",
      "vetted": "2026-11-23"
+    }
+   ],
+   "review": {
+    "confidence": "medium",
+    "flags": [
+     "Home alternative"
+    ],
+    "authored": "Home alternative written by Claude, pending review"
+   },
+   "homeAlternative": true
+  },
+  {
+   "id": "db_hip_thrust_couch",
+   "sourceName": "(home alternative) Hip thrust con mancuerna en el sillón",
+   "name": {
+    "en": "Dumbbell hip thrust on the couch",
+    "es": "Hip thrust con mancuerna en el sillón"
+   },
+   "category": "strength",
+   "region": "lower_hinge",
+   "muscles": {
+    "primary": [
+     "glutes",
+     "hamstrings"
+    ],
+    "secondary": []
+   },
+   "mobilityTargets": [],
+   "equipment": [
+    {
+     "anyOf": [
+      "couch_chair",
+      "box",
+      "flat_bench"
+     ],
+     "optional": false
+    },
+    {
+     "anyOf": [
+      "dumbbells"
+     ],
+     "optional": false
+    },
+    {
+     "anyOf": [
+      "mat"
+     ],
+     "optional": true
+    }
+   ],
+   "laterality": "bilateral",
+   "instructions": {
+    "en": [
+     "Sit on the floor with your upper back against the couch edge, feet flat, knees bent.",
+     "Hold a dumbbell on your hips with both hands (a folded towel under it helps).",
+     "Drive through your heels and lift until your body is flat from shoulders to knees.",
+     "Squeeze your glutes for 1 to 2 seconds at the top, lower under control."
+    ],
+    "es": [
+     "Sentate en el piso con la parte alta de la espalda apoyada en el borde del sillón, pies apoyados, rodillas flexionadas.",
+     "Sostené una mancuerna sobre la cadera con las dos manos (una toalla doblada abajo ayuda).",
+     "Empujá con los talones y subí hasta quedar recto de hombros a rodillas.",
+     "Apretá los glúteos 1 a 2 segundos arriba y bajá controlado."
+    ]
+   },
+   "cues": {
+    "en": [
+     "Chin tucked, ribs down",
+     "Shins vertical at the top"
+    ],
+    "es": [
+     "Mentón adentro, costillas abajo",
+     "Tibias verticales arriba"
+    ]
+   },
+   "videos": [
+    {
+     "youtubeId": "mmscrqxCl8w",
+     "startSec": 0,
+     "source": "found",
+     "url": "https://www.youtube.com/watch?v=mmscrqxCl8w",
+     "title": "Sofa Hip Thrusts",
+     "channel": "Dom Thorpe",
+     "verified": "2026-11-24",
+     "vetted": "2026-11-24"
     }
    ],
    "review": {

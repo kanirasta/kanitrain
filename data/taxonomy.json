@@ -234,6 +234,10 @@
     "pull_up_bar": {
       "en": "Pull-up bar",
       "es": "Barra de dominadas"
+    },
+    "couch_chair": {
+      "en": "Couch or sturdy chair",
+      "es": "Sillón o silla firme"
     }
   }
 }

@@ -11,7 +11,10 @@ export const DEFAULT_EQUIPMENT = [
   { id: 'eq6', type: 'box', note: 'Wooden table, used as a plyo box' },
   { id: 'eq7', type: 'treadmill', note: 'Walking treadmill, max 6 km/h' },
   { id: 'eq8', type: 'mat', note: '' },
+  { id: 'eq9', type: 'couch_chair', note: 'Couch, for split squats and hip thrusts' },
 ];
+// Equipment list revision: lets an update add a new default item once, without re-adding it after you delete it.
+const EQ_REV = 2;
 
 const DEFAULTS = {
   settings: {
@@ -32,7 +35,15 @@ const DEFAULTS = {
 };
 
 let state = load();
-if (!Array.isArray(state.equipment)) { state.equipment = structuredClone(DEFAULT_EQUIPMENT); try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {} }
+if (!Array.isArray(state.equipment)) state.equipment = structuredClone(DEFAULT_EQUIPMENT);
+migrateEquipment();
+try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {}
+
+function migrateEquipment() {
+  if ((state.eqRev || 1) < 2 && !state.equipment.some(e => e.type === 'couch_chair'))
+    state.equipment.push(structuredClone(DEFAULT_EQUIPMENT.find(e => e.type === 'couch_chair')));
+  state.eqRev = EQ_REV;
+}
 
 function load() {
   try {
@@ -70,9 +81,10 @@ export const store = {
     if (!obj || obj.app !== 'training' || !obj.data || !Array.isArray(obj.data.sessions)) throw new Error('bad');
     state = { ...structuredClone(DEFAULTS), ...obj.data, settings: { ...DEFAULTS.settings, ...obj.data.settings } };
     if (!Array.isArray(state.equipment)) state.equipment = structuredClone(DEFAULT_EQUIPMENT);
+    migrateEquipment();
     save();
   },
-  reset() { state = structuredClone(DEFAULTS); state.equipment = structuredClone(DEFAULT_EQUIPMENT); save(); },
+  reset() { state = structuredClone(DEFAULTS); state.equipment = structuredClone(DEFAULT_EQUIPMENT); state.eqRev = EQ_REV; save(); },
   equipment() { return state.equipment; },
   saveEquipment(item) {
     if (item.id) { const i = state.equipment.findIndex(e => e.id === item.id); if (i >= 0) state.equipment[i] = item; }

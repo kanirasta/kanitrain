@@ -8,7 +8,7 @@ import {
 import { mountVideo } from './video.js';
 import { unlockAudio, sound, buzz, keepAwake, isStandalone, isIOS } from './device.js';
 
-export const BUILD = '2026-11-24b';
+export const BUILD = '2026-11-24c';
 const $app = document.getElementById('app');
 const $sheet = document.getElementById('sheet');
 
@@ -117,7 +117,7 @@ function renderHome() {
     const rows = b.items.map((item, ii) => {
       const r = resolveItem(item);
       const ex = data.ex[r.exId];
-      const sub = r.swap ? `<small class="swap ${r.swap.fit}">${t('insteadOf', { name: L(data.ex[r.swap.from].name) })}</small>`
+      const sub = r.swap ? `<small class="swap ${r.swap.reason === 'load' ? 'good' : r.swap.fit}">${t('insteadOf', { name: L(data.ex[r.swap.from].name) })}</small>`
         : r.missing.length ? `<small class="swap missing">${t('needs')} ${esc(r.missing.map(g => g.map(equipName).join(orWord)).join(', '))}</small>` : '';
       return `<button class="ex-row" data-a="ex" data-ex="${ex.id}" data-block="${b.id}" data-item="${ii}">
         <span class="ex-name">${esc(L(ex.name))}${ex.videos.length ? ICON.play : ''}${sub}</span>

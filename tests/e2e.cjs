@@ -351,16 +351,37 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   const goHomeDay = async id => { await tap('[data-a=go][data-to=home]'); await tap('[data-a=days]'); await tap(`.day-row[data-day=${id}]`); await sleep(100); };
   await test('equipment: defaults are your home list', async () => {
     const eq = await p.evaluate(() => window.__app.store.s.equipment.map(e => e.type));
-    for (const k of ['dumbbells', 'barbell', 'plate', 'mini_band', 'pull_up_bar', 'box', 'treadmill', 'mat']) assert(eq.includes(k), 'missing ' + k);
+    for (const k of ['dumbbells', 'barbell', 'plate', 'mini_band', 'pull_up_bar', 'box', 'treadmill', 'mat', 'couch_chair']) assert(eq.includes(k), 'missing ' + k);
   });
-  await test('home: back squat is swapped and the day is flagged for the gym', async () => {
+  await test('equipment: an older saved list gets the couch once, and a deleted couch stays deleted', async () => {
+    const add = await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('trainingApp.v1')); s.equipment = s.equipment.filter(e => e.type !== 'couch_chair'); delete s.eqRev; localStorage.setItem('trainingApp.v1', JSON.stringify(s)); });
+    await p.reload(); await p.waitForSelector('.home');
+    assert(await p.evaluate(() => window.__app.store.s.equipment.filter(e => e.type === 'couch_chair').length === 1), 'couch not added to old list');
+    await p.evaluate(() => { const st = window.__app.store; st.deleteEquipment(st.s.equipment.find(e => e.type === 'couch_chair').id); });
+    await p.reload(); await p.waitForSelector('.home');
+    assert(await p.evaluate(() => !window.__app.store.s.equipment.some(e => e.type === 'couch_chair')), 'deleted couch came back');
+  });
+  await test('home: back squat is swapped, but lighter weights alone do not flag the gym', async () => {
     await tap('[data-a=go][data-to=settings]');
     await p.evaluate(() => { window.__app.store.reset(); });
     await goHomeDay('w1-mon');
     assert(await exists('.seg.loc button.on[data-v=home]'), 'not at home');
     assert(await exists('.ex-row[data-ex=goblet_squat_tempo]'), 'back squat not swapped');
     assert(!(await exists('.ex-row[data-ex=back_squat]')), 'back squat still listed');
+    assert(!(await exists('.card.gym-hint')), 'load-only swap flagged the gym');
+    assert(await exists('.home-ok'), 'no swap summary');
+  });
+  await test('home: a missing machine flags the day for the gym', async () => {
+    await goHomeDay('w1-wed');
     assert(await exists('.card.gym-hint'), 'no gym hint');
+    await goHomeDay('w1-mon');
+  });
+  await test('home: couch replaces the bench for split squats and hip thrusts', async () => {
+    await goHomeDay('w3-mon');
+    assert(await exists('.ex-row[data-ex=bulgarian_split_squat]'), 'bulgarian split squat swapped despite couch');
+    await goHomeDay('w2-wed');
+    assert(await exists('.ex-row[data-ex=db_hip_thrust_couch]'), 'hip thrust not on the couch');
+    await goHomeDay('w1-mon');
   });
   await test('home: swapped exercise popup explains the swap', async () => {
     await tap('.ex-row[data-ex=goblet_squat_tempo]'); await p.waitForSelector('#sheet .sheet');
