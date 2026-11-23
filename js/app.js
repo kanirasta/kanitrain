@@ -8,7 +8,7 @@ import {
 import { mountVideo } from './video.js';
 import { unlockAudio, sound, buzz, keepAwake, isStandalone, isIOS } from './device.js';
 
-export const BUILD = '2026-11-23i';
+export const BUILD = '2026-11-23j';
 const $app = document.getElementById('app');
 const $sheet = document.getElementById('sheet');
 
