@@ -44,7 +44,21 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   p.on('pageerror', e => errors.push(e.message));
   p.on('dialog', d => d.accept());
   // Keep YouTube offline in tests: an empty page stands in for the embed.
-  await p.route(/youtube/, r => r.fulfill({ status: 200, contentType: 'text/html', body: '<body style="background:#000"></body>' }));
+  // A fake IFrame API records what the app asks the player to do.
+  const FAKE_YT = `window.__yt = { calls: [] };
+    window.YT = { PlayerState: { ENDED: 0, PLAYING: 1, PAUSED: 2 }, Player: function (el, o) {
+      const f = document.createElement('iframe'); f.src = 'about:blank'; f.dataset.vid = o.videoId; el.replaceWith(f);
+      let t = o.playerVars.start || 0, muted = true; const self = this; window.__yt.vars = o.playerVars;
+      const st = s => o.events.onStateChange && o.events.onStateChange({ data: s, target: self });
+      Object.assign(this, { playVideo() { __yt.calls.push('play'); st(1); }, pauseVideo() { __yt.calls.push('pause'); st(2); },
+        seekTo(x) { t = x; __yt.calls.push('seek' + x); }, setPlaybackRate(r) { __yt.calls.push('rate' + r); },
+        mute() { muted = true; }, unMute() { muted = false; __yt.calls.push('unmute'); }, isMuted() { return muted; },
+        getCurrentTime() { return t; }, getDuration() { return 100; }, destroy() {} });
+      setTimeout(() => o.events.onReady && o.events.onReady({ target: self }), 10);
+    } };
+    window.onYouTubeIframeAPIReady && window.onYouTubeIframeAPIReady();`;
+  await p.route(/youtube\.com\/iframe_api/, r => r.fulfill({ status: 200, contentType: 'text/javascript', body: FAKE_YT }));
+  await p.route(/youtube(-nocookie)?\.com\/(?!iframe_api)/, r => r.fulfill({ status: 200, contentType: 'text/html', body: '<body style="background:#000"></body>' }));
 
   const tap = sel => p.tap(sel);
   const exists = async sel => !!(await p.$(sel));
@@ -81,6 +95,25 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   await test('details: open, play video, close with X', async () => {
     await openExercise(); await playVideo(); await tap('#sheet .close'); await sleep(150);
     assert(!(await sheetOpen()), 'popup still open');
+  });
+  await test('video: app controls pause, restart, slow motion, sound and loop the demo', async () => {
+    await openExercise(); await playVideo();
+    await p.waitForFunction(() => window.__yt && window.__yt.calls.includes('play'));
+    const vars = await p.evaluate(() => window.__yt.vars);
+    assert(vars.controls === 0 && vars.rel === 0 && vars.iv_load_policy === 3 && vars.playsinline === 1, 'player vars ' + JSON.stringify(vars));
+    await tap('.tap-layer'); await tap('[data-v=restart]'); await tap('[data-v=speed]'); await tap('[data-v=sound]');
+    const calls = await p.evaluate(() => window.__yt.calls);
+    for (const c of ['pause', 'seek0', 'rate0.5', 'unmute']) assert(calls.includes(c), 'missing ' + c + ' in ' + calls);
+    await tap('#sheet .close'); await sleep(150);
+    assert(!(await sheetOpen()), 'popup still open');
+  });
+  await test('video: trimmed demos start and stop at the demo part', async () => {
+    await tap('[data-a=days]'); await tap('.day-row[data-day=w1-mon]');
+    await tap('.ex-row[data-ex=db_rdl]'); await p.waitForSelector('#sheet .sheet'); await playVideo();
+    await p.waitForFunction(() => window.__yt && window.__yt.vars && window.__yt.vars.start === 21);
+    const v = await p.evaluate(() => window.__yt.vars);
+    assert(v.start === 21 && v.end === 50, 'start/end ' + v.start + '/' + v.end);
+    await tap('#sheet .close'); await sleep(150);
   });
   await test('details: close with bottom Close button after video', async () => {
     await openExercise(); await playVideo();

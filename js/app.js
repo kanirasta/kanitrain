@@ -5,9 +5,10 @@ import {
   lastValuesFor, muscleLastTrained, daysSince, freshness, topMuscles, weekDays, doneInCurrentCycle,
   suggestedDay, isLowerUnilateral, lastSessionFor,
 } from './plan.js';
+import { mountVideo } from './video.js';
 import { unlockAudio, sound, buzz, keepAwake, isStandalone, isIOS } from './device.js';
 
-export const BUILD = '2026-11-23g';
+export const BUILD = '2026-11-23h';
 const $app = document.getElementById('app');
 const $sheet = document.getElementById('sheet');
 
@@ -177,7 +178,7 @@ function renderExSheet({ exId, blockId, itemIdx, dayId }) {
   const cues = (L(ex.cues) || []).map(s => `<li>${esc(s)}</li>`).join('');
   const hist = exerciseHistory(exId, 4).map(h => `<li><span class="muted">${fmtDate(h.date)}</span> ${h.sets.map(s =>
     `${s.side ? (s.side === 'left' ? 'L ' : 'R ') : ''}${s.weight ? `${+s.weight}×` : ''}${s.reps ?? (s.durationSec ? s.durationSec + 's' : '')}`).join(', ')}</li>`).join('');
-  const video = v ? `<div class="video" id="video" data-yt="${esc(v.youtubeId)}" data-start="${v.startSec || 0}">
+  const video = v ? `<div class="video" id="video" data-yt="${esc(v.youtubeId)}" data-start="${v.startSec || 0}" data-end="${v.endSec || ''}">
       <button class="btn primary" data-a="video">${ICON.play} ${t('watchVideo')}</button>
       <p class="muted small">${esc(v.title || '')}${v.channel ? ' · ' + esc(v.channel) : ''}</p>
       <a class="link" href="https://www.youtube.com/watch?v=${esc(v.youtubeId)}${v.startSec ? '&t=' + v.startSec + 's' : ''}" target="_blank" rel="noopener">${t('openYoutube')}</a>
@@ -581,7 +582,7 @@ document.addEventListener('click', async e => {
       const box = el.closest('.video');
       const id = box.dataset.yt, start = box.dataset.start;
       if (!navigator.onLine) { showToast(t('videoOffline')); return; }
-      box.innerHTML = `<div class="frame"><iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}?start=${+start}&autoplay=1&playsinline=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>` + box.innerHTML.replace(/<button[\s\S]*?<\/button>/, '');
+      mountVideo(box, { id, start: +start || 0, end: +box.dataset.end || null });
       return;
     }
     case 'start': startWorkout(); return;
