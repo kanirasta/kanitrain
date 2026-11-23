@@ -151,9 +151,11 @@ function renderSheet() {
   $sheet.className = 'open';
   document.body.classList.add('locked');
   $sheet.innerHTML = `<div class="scrim" data-a="close"></div>
-    <div class="sheet" role="dialog"><div class="grab"></div>
-      <button class="close" data-a="close" aria-label="${t('close')}">${ICON.x}</button>
-      <div class="sheet-body">${body}</div></div>`;
+    <div class="sheet" role="dialog">
+      <div class="sheet-head" data-drag><div class="grab"></div>
+        <button class="close" data-a="close" aria-label="${t('close')}">${ICON.x}</button></div>
+      <div class="sheet-body">${body}
+        <button class="btn ghost sheet-done" data-a="close">${t('close')}</button></div></div>`;
   $sheet.querySelector('.sheet-body').scrollTop = keepScroll;
 }
 
@@ -674,6 +676,19 @@ function beepCountdown(a, left, tag) {
   const s = Math.ceil(left);
   if (s >= 1 && s <= 3 && a._beep !== tag + s) { a._beep = tag + s; sound.tick(); }
 }
+
+// Close a sheet by dragging its header down (also a fallback if iOS shifts the view after fullscreen video).
+let dragY = null;
+document.addEventListener('touchstart', e => { if (e.target.closest('[data-drag]')) dragY = e.touches[0].clientY; }, { passive: true });
+document.addEventListener('touchend', e => {
+  if (dragY != null && e.changedTouches[0].clientY - dragY > 60 && ui.sheet) { ui.sheet = null; render(); }
+  dragY = null;
+}, { passive: true });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && ui.sheet) { ui.sheet = null; render(); } });
+// iOS can leave the page scrolled or zoomed after exiting a fullscreen YouTube video. Snap it back.
+const resetViewport = () => { if (ui.sheet) setTimeout(() => window.scrollTo(0, window.scrollY), 50); };
+window.addEventListener('resize', resetViewport);
+document.addEventListener('webkitfullscreenchange', resetViewport);
 
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible' && ui.screen === 'workout') { keepAwake(true); render(); }
