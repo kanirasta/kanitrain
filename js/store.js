@@ -26,9 +26,13 @@ const DEFAULTS = {
     sound: true,
     week: 1,
     location: 'home',  // 'home' uses your equipment and swaps exercises; 'gym' runs the plan as written
+    extraCalves: true,  // optional extras added on top of the coach's plan
+    extraAnkles: true,
+    extraPogo: false,
   },
   equipment: null,   // filled with DEFAULT_EQUIPMENT on first run
   sessions: [],      // finished workouts
+  activities: [],    // runs and swims: {id, type, date 'YYYY-MM-DD', min, km, effort}
   active: null,      // workout in progress (for resume)
   notes: {},         // exerciseId -> text
   lastBackupAt: null,
@@ -86,6 +90,9 @@ export const store = {
   },
   reset() { state = structuredClone(DEFAULTS); state.equipment = structuredClone(DEFAULT_EQUIPMENT); state.eqRev = EQ_REV; save(); },
   equipment() { return state.equipment; },
+  activities() { return state.activities || (state.activities = []); },
+  addActivity(a) { this.activities().push({ ...a, id: 'act' + Date.now() }); save(); },
+  deleteActivity(id) { state.activities = this.activities().filter(a => a.id !== id); save(); },
   saveEquipment(item) {
     if (item.id) { const i = state.equipment.findIndex(e => e.id === item.id); if (i >= 0) state.equipment[i] = item; }
     else state.equipment.push({ ...item, id: 'eq' + Date.now() });

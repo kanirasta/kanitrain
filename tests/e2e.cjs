@@ -90,6 +90,9 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   await p.evaluate(() => localStorage.clear());
   await p.reload();
   await p.waitForSelector('.home');
+  // Most tests check the coach's plan as written; the optional extras get their own tests at the end.
+  const plainPlan = () => p.evaluate(() => { const s = window.__app.store; s.setSetting('extraCalves', false); s.setSetting('extraAnkles', false); s.setSetting('extraPogo', false); window.__app.render(); });
+  await plainPlan();
 
   // ---------- details popup ----------
   await test('details: open, play video, close with X', async () => {
@@ -364,6 +367,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   await test('home: back squat is swapped, but lighter weights alone do not flag the gym', async () => {
     await tap('[data-a=go][data-to=settings]');
     await p.evaluate(() => { window.__app.store.reset(); });
+    await plainPlan();
     await goHomeDay('w1-mon');
     assert(await exists('.seg.loc button.on[data-v=home]'), 'not at home');
     assert(await exists('.ex-row[data-ex=goblet_squat_tempo]'), 'back squat not swapped');
@@ -436,6 +440,87 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
       return m.allDays().map(d => { const h = m.homeReport(d); return d.id + ':' + h.swaps.length + '/' + h.partial.length + '/' + h.missing.length; });
     });
     console.log('        home report (swaps/partial/missing):', r.join(' '));
+  });
+
+  // ---------- optional extras ----------
+  const setExtras = (c, a, pg) => p.evaluate(([c, a, pg]) => { const s = window.__app.store; s.setSetting('extraCalves', c); s.setSetting('extraAnkles', a); s.setSetting('extraPogo', pg); window.__app.render(); }, [c, a, pg]);
+  await test('extras: defaults are calves and ankles on, pogo off', async () => {
+    await tap('[data-a=go][data-to=settings]');
+    await p.evaluate(() => window.__app.store.reset()); await p.reload(); await p.waitForSelector('.home');
+    const s = await p.evaluate(() => window.__app.store.settings());
+    assert(s.extraCalves === true && s.extraAnkles === true && s.extraPogo === false, JSON.stringify(s));
+  });
+  await test('extras: calves block at the end and ankle drills right after the warm-up', async () => {
+    await goHomeDay('w1-mon');
+    const blocks = await p.$$eval('.plan .block', els => els.map(e => e.querySelector('.ex-row')?.dataset.block));
+    assert(blocks[1] === 'x-ankles', 'ankles not after warm-up: ' + blocks);
+    assert(blocks[blocks.length - 1] === 'x-calves', 'calves not last: ' + blocks);
+    assert(!blocks.includes('x-pogo'), 'pogo on by default');
+  });
+  await test('extras: calf raises go left first with an extra left set', async () => {
+    const seq = await p.evaluate(async () => {
+      const m = await import('./js/plan.js');
+      return m.buildSteps(m.dayById('w1-mon')).filter(s => s.exId === 'calf_raise_straight_sl').map(s => s.side[0].toUpperCase()).join('');
+    });
+    assert(seq === 'LRLRL', 'calf order ' + seq);
+  });
+  await test('extras: Settings toggles turn blocks on and off', async () => {
+    await tap('[data-a=go][data-to=settings]');
+    await tap('.extras [data-k=extraPogo][data-v=true]');
+    await tap('.extras [data-k=extraCalves][data-v=false]');
+    await goHomeDay('w1-wed');
+    assert(await exists('.ex-row[data-ex=pogo_hops]'), 'no pogo on Wednesday');
+    assert(!(await exists('.ex-row[data-ex=calf_raise_straight_sl]')), 'calves still shown');
+    await goHomeDay('w1-mon');
+    assert(!(await exists('.ex-row[data-ex=pogo_hops]')), 'pogo on Monday');
+    await setExtras(true, true, false);
+  });
+  await test('extras: a workout with extras runs to the end', async () => {
+    await goHomeDay('w1-fri');
+    await tap('[data-a=start]'); await p.waitForSelector('.workout');
+    assert(await doneUntil(() => exists('.summary'), 200), 'never reached summary');
+    const n = await p.evaluate(() => { const s = window.__app.store.s.sessions; return s[s.length - 1].sets.filter(x => x.exId.startsWith('calf_raise')).length; });
+    assert(n === 10, 'calf sets logged ' + n);
+    await tap('.start-bar [data-a=go]');
+  });
+
+  // ---------- runs and swims ----------
+  await test('runs: log a hard run from Today and see it in History', async () => {
+    await goHomeDay('w1-mon');
+    await tap('[data-a=log-act]'); await p.waitForSelector('.act-form');
+    await p.fill('[data-actmin]', '40'); await p.fill('[data-actkm]', '7.5');
+    await tap('[data-a=act-effort][data-v=hard]');
+    assert(await p.$eval('[data-actmin]', e => e.value) === '40', 'typed value lost after picking effort');
+    await tap('[data-a=act-save]'); await sleep(100);
+    assert(!(await sheetOpen()), 'sheet still open');
+    const a = await p.evaluate(() => window.__app.store.s.activities);
+    assert(a.length === 1 && a[0].type === 'run' && a[0].min === 40 && a[0].km === 7.5 && a[0].effort === 'hard', JSON.stringify(a));
+    await tap('[data-a=go][data-to=history]');
+    assert((await p.textContent('.history')).includes('7.5 km'), 'run not in history');
+  });
+  await test('runs: a hard run yesterday warns on a leg day and ranks leg days lower', async () => {
+    await p.evaluate(() => { const s = window.__app.store; const d = new Date(Date.now() - 86400000); s.s.activities[0].date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; });
+    await goHomeDay('w1-mon');
+    assert(await exists('.card.run-hint'), 'no run hint on leg day');
+    assert((await p.textContent('.card.run-hint')).includes('yesterday'), 'hint text');
+    const r = await p.evaluate(async () => { const m = await import('./js/plan.js'); const f = m.freshness(m.dayById('w1-mon')); return f; });
+    assert(r < 1, 'freshness not lowered: ' + r);
+  });
+  await test('runs: swim logs and both can be deleted', async () => {
+    await tap('[data-a=go][data-to=history]');
+    await tap('.history [data-a=log-act]'); await p.waitForSelector('.act-form');
+    await tap('[data-a=act-type][data-v=swim]'); await p.fill('[data-actmin]', '30');
+    await tap('[data-a=act-save]'); await sleep(100);
+    assert(await p.evaluate(() => window.__app.store.s.activities.some(a => a.type === 'swim' && a.min === 30)), 'swim not saved');
+    while (await exists('[data-a=act-del]')) { await tap('[data-a=act-del] >> nth=0'); await sleep(50); }
+    assert(await p.evaluate(() => window.__app.store.s.activities.length === 0), 'not deleted');
+  });
+  await test('runs: an empty entry is not saved', async () => {
+    await tap('.history [data-a=log-act]'); await p.waitForSelector('.act-form');
+    await tap('[data-a=act-save]'); await sleep(100);
+    assert(await sheetOpen(), 'sheet closed without data');
+    assert(await p.evaluate(() => window.__app.store.s.activities.length === 0), 'empty entry saved');
+    await tap('#sheet .close');
   });
 
   await test('no JavaScript errors during the run', async () => {

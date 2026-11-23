@@ -17,8 +17,42 @@ const WEIGHTED = new Set(['dumbbells', 'barbell', 'kettlebell', 'plate', 'cable_
   'leg_curl_machine', 'leg_press_machine', 'smith_machine']);
 const LOWER = new Set(['lower_quad', 'lower_hinge']);
 
+// Optional extras on top of the coach's plan (toggled in Settings).
+const SIDES = (l, r, reps) => ({ left: { sets: l, reps }, right: { sets: r, reps } });
+const EXTRA = {
+  ankles: { id: 'x-ankles', type: 'circuit', extra: true, name: { en: 'Ankle mobility (extra)', es: 'Movilidad de tobillo (extra)' }, items: [
+    { exerciseId: 'ankle_knee_to_wall', sets: 2, reps: 10, per: 'side' },
+    { exerciseId: 'tibialis_wall_raise', sets: 2, reps: 15 },
+  ] },
+  pogo: { id: 'x-pogo', type: 'straight_sets', extra: true, name: { en: 'Pogo hops (extra)', es: 'Saltitos pogo (extra)' }, items: [
+    { exerciseId: 'pogo_hops', sets: 3, reps: 20 },
+  ] },
+  calves: { id: 'x-calves', type: 'straight_sets', extra: true, name: { en: 'Calves (extra, left first)', es: 'Pantorrillas (extra, izquierda primero)' }, items: [
+    { exerciseId: 'calf_raise_straight_sl', sets: 3, reps: 12, per: 'leg', sides: SIDES(3, 2, 12) },
+    { exerciseId: 'calf_raise_bent_sl', sets: 3, reps: 12, per: 'leg', sides: SIDES(3, 2, 12) },
+  ] },
+};
+export const POGO_DAY = 'wed';
+function withExtras(day, st) {
+  const blocks = [...day.blocks], load = { ...(day.muscleLoad || {}) };
+  if (st.extraAnkles) blocks.splice(blocks.findIndex(b => b.type === 'warmup') + 1, 0, EXTRA.ankles);
+  if (st.extraPogo && day.weekday === POGO_DAY) {
+    const i = blocks.findIndex(b => b.id === 'main');
+    blocks.splice(i < 0 ? blocks.length : i, 0, EXTRA.pogo);
+    load.calves = (load.calves || 0) + 2;
+  }
+  if (st.extraCalves) { blocks.push(EXTRA.calves); load.calves = (load.calves || 0) + 5; }
+  return { ...day, blocks, muscleLoad: load };
+}
+let daysCache = null, daysKey = '';
 export function allDays() {
-  return data.plan.weeks.flatMap(w => w.days.map(d => ({ ...d, week: w.week })));
+  const st = store.settings();
+  const key = [!!st.extraCalves, !!st.extraAnkles, !!st.extraPogo].join();
+  if (!daysCache || key !== daysKey) {
+    daysKey = key;
+    daysCache = data.plan.weeks.flatMap(w => w.days.map(d => withExtras({ ...d, week: w.week }, st)));
+  }
+  return daysCache;
 }
 export function dayById(id) { return allDays().find(d => d.id === id); }
 export function weekCount() { return data.plan.weeks.length; }
@@ -203,10 +237,34 @@ export function lastValuesFor(step) {
   return null;
 }
 
+// ---------- Runs and swims ----------
+// Muscles a run or swim tires, by effort. Easy sessions don't count as training.
+const ACT_MUSCLES = {
+  run: { hard: ['calves', 'quads', 'hamstrings', 'glutes'], moderate: ['calves', 'quads'] },
+  swim: { hard: ['lats', 'upper_back', 'front_delts', 'side_delts', 'rear_delts', 'triceps'] },
+};
+export const actTime = a => new Date(a.date + 'T12:00:00').getTime();
+const LEGS = ['calves', 'quads', 'hamstrings', 'glutes', 'glute_med', 'adductors'];
+export function legShare(day) {
+  const e = Object.entries(day.muscleLoad || {});
+  const tot = e.reduce((a, [, v]) => a + v, 0);
+  return tot ? e.filter(([m]) => LEGS.includes(m)).reduce((a, [, v]) => a + v, 0) / tot : 0;
+}
+// The most recent run today or yesterday, if this day leans on the legs.
+export function recentRunFor(day) {
+  if (legShare(day) < 0.4) return null;
+  const runs = (store.s.activities || []).filter(a => a.type === 'run' && daysSince(actTime(a)) <= 1 && daysSince(actTime(a)) >= 0);
+  return runs.sort((a, b) => actTime(b) - actTime(a))[0] || null;
+}
+
 // ---------- Muscle recency ----------
-// Days since each muscle was last trained (primary counts fully, secondary counts too).
+// Days since each muscle was last trained (primary counts fully, secondary counts too), runs and swims included.
 export function muscleLastTrained() {
   const last = {};
+  for (const a of store.s.activities || []) {
+    const when = actTime(a);
+    for (const m of (ACT_MUSCLES[a.type] || {})[a.effort] || []) if (!last[m] || last[m] < when) last[m] = when;
+  }
   for (const sess of store.s.sessions) {
     const when = new Date(sess.start).getTime();
     for (const set of sess.sets) {

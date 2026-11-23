@@ -2,13 +2,13 @@ import { t, L, setLang, getLang, LANGS } from './i18n.js';
 import { store, requestPersistence } from './store.js';
 import {
   data, loadData, allDays, dayById, weekCount, buildSteps, estimateMinutes, exerciseIdsOf, exerciseHistory,
-  lastValuesFor, muscleLastTrained, daysSince, freshness, topMuscles, weekDays, doneInCurrentCycle,
+  lastValuesFor, muscleLastTrained, recentRunFor, actTime, daysSince, freshness, topMuscles, weekDays, doneInCurrentCycle,
   suggestedDay, isLowerUnilateral, lastSessionFor, resolveItem, homeReport, equipmentNeeded,
 } from './plan.js';
 import { mountVideo } from './video.js';
 import { unlockAudio, sound, buzz, keepAwake, isStandalone, isIOS } from './device.js';
 
-export const BUILD = '2026-11-24c';
+export const BUILD = '2026-11-24d';
 const $app = document.getElementById('app');
 const $sheet = document.getElementById('sheet');
 
@@ -111,6 +111,9 @@ function renderHome() {
       ${report.partial.map(sw => `<li>${esc(L(data.ex[sw.from].name))} → ${esc(L(data.ex[sw.to].name))}: ${esc(L(sw.note))}</li>`).join('')}</ul>
       <button class="btn ghost small" data-a="set" data-k="location" data-v="gym">${t('switchToGym')}</button></div>` : '';
   const swapLine = report && report.swaps.length && !report.gymBetter ? `<p class="muted small home-ok">${t('homeSwaps', { n: report.swaps.length })}</p>` : '';
+  const run = recentRunFor(day);
+  const runCard = run ? `<div class="card run-hint"><p>${t('ranHint', { when: rel(actTime(run)).toLowerCase(), effort: t('effort_' + run.effort).toLowerCase() })}</p>
+      <button class="btn ghost small" data-a="days">${t('changeDay')}</button></div>` : '';
 
   const blocks = day.blocks.map(b => {
     const title = b.type === 'warmup' ? t('block_warmup') : L(b.name);
@@ -124,7 +127,7 @@ function renderHome() {
         <span class="ex-presc">${esc(presc(item))}</span>
       </button>`;
     }).join('');
-    return `<section class="block"><h3>${esc(title)}</h3>${rows}</section>`;
+    return `<section class="block${b.extra ? ' extra' : ''}"><h3>${esc(title)}</h3>${rows}</section>`;
   }).join('');
 
   return `<main class="home">
@@ -137,8 +140,9 @@ function renderHome() {
       <button class="btn ghost small" data-a="days">${t('changeDay')}</button>
     </header>
     ${install}${resume}
-    ${locSeg}${gymCard}${swapLine}
-    <section class="card"><h2>${t('muscles')}</h2><div class="chips">${muscles}</div></section>
+    ${runCard}${locSeg}${gymCard}${swapLine}
+    <section class="card"><h2>${t('muscles')}</h2><div class="chips">${muscles}</div>
+      <button class="btn ghost small log-act" data-a="log-act">+ ${t('logActivity')}</button></section>
     <section class="card"><h2>${t('equipment')}</h2><ul class="equip">${equip}</ul></section>
     <section class="card plan">${blocks}</section>
     <div class="start-bar"><button class="btn primary big" data-a="start" ${active ? 'disabled' : ''}>${t('start')}</button></div>
@@ -157,6 +161,7 @@ function renderSheet() {
   else if (sh.type === 'days') body = renderDaysSheet();
   else if (sh.type === 'steps') body = renderStepsSheet();
   else if (sh.type === 'menu') body = renderMenuSheet();
+  else if (sh.type === 'activity') body = renderActivitySheet();
   // Keep an open video iframe alive across re-renders.
   const keepScroll = $sheet.querySelector('.sheet-body')?.scrollTop || 0;
   if ($sheet.dataset.key === JSON.stringify(sh) && $sheet.innerHTML) return;
@@ -542,15 +547,39 @@ function renderSummary() {
   </main>`;
 }
 
+// ---------- runs and swims ----------
+const todayISO = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+function renderActivitySheet() {
+  const seg = (a, opts, on) => `<div class="seg">${opts.map(([v, l]) => `<button class="${v === on ? 'on' : ''}" data-a="${a}" data-v="${v}">${l}</button>`).join('')}</div>`;
+  return `<h2 class="sheet-title">${t('logActivity')}</h2>
+    <div class="act-form">
+      ${seg('act-type', [['run', t('run')], ['swim', t('swim')]], 'run')}
+      <label>${t('date')}<input type="date" data-actdate value="${todayISO()}" max="${todayISO()}"></label>
+      <div class="row"><label>${t('durationMin')}<input type="number" inputmode="numeric" min="1" data-actmin></label>
+        <label>${t('distanceKm')}<input type="number" inputmode="decimal" min="0" step="0.1" data-actkm></label></div>
+      <h3>${t('effort')}</h3>
+      ${seg('act-effort', [['easy', t('effort_easy')], ['moderate', t('effort_moderate')], ['hard', t('effort_hard')]], 'moderate')}
+      <button class="btn primary big" data-a="act-save">${t('saveShort')}</button>
+    </div>`;
+}
+const actLine = a => [a.min ? `${a.min} min` : '', a.km ? `${+a.km} km` : '', t('effort_' + a.effort)].filter(Boolean).join(' · ');
+
 // ---------- history ----------
 function renderHistory() {
-  const list = [...store.s.sessions].reverse().map(s => {
-    const d = dayById(s.dayId);
-    return `<button class="day-row" data-a="open-sess" data-id="${s.id}">
+  const rows = [
+    ...store.s.sessions.map(s => ({ ts: new Date(s.start).getTime(), html: (() => {
+      const d = dayById(s.dayId);
+      return `<button class="day-row" data-a="open-sess" data-id="${s.id}">
       <div class="day-head"><b>${esc(d ? dayTitle(d) : s.dayId)}</b><span class="muted">${fmtDate(s.start)}</span></div>
       <p class="muted small">${fmtDur(new Date(s.end) - new Date(s.start))} · ${s.sets.length}/${s.totalSteps} ${t('setsDone').toLowerCase()}</p></button>`;
-  }).join('');
-  return `<main class="history"><header class="top"><h1>${t('sessions')}</h1></header>${list || `<p class="muted">${t('noSessions')}</p>`}</main>`;
+    })() })),
+    ...store.activities().map(a => ({ ts: actTime(a), html: `<div class="day-row act-row" data-act="${a.id}">
+      <div class="day-head"><b>${t(a.type)}</b><span class="muted">${fmtDate(actTime(a))}</span>
+        <button class="btn ghost small" data-a="act-del" data-id="${a.id}" aria-label="${t('delete')}">${ICON.x}</button></div>
+      <p class="muted small">${esc(actLine(a))}</p></div>` })),
+  ].sort((a, b) => b.ts - a.ts).map(r => r.html).join('');
+  return `<main class="history"><header class="top"><h1>${t('sessions')}</h1>
+    <button class="btn ghost small" data-a="log-act">+ ${t('logActivityShort')}</button></header>${rows || `<p class="muted">${t('noSessions')}</p>`}</main>`;
 }
 
 // ---------- settings ----------
@@ -569,6 +598,10 @@ function renderSettings() {
     <section class="card"><h2>${t('sound')}</h2>${seg('sound', [[true, t('on')], [false, t('off')]])}
       <button class="btn ghost small" data-a="test-sound">${t('soundTest')}</button><p class="muted small">${t('soundHint')}</p></section>
     ${renderEquipmentCard()}
+    <section class="card extras"><h2>${t('extras')}</h2><p class="muted small">${t('extrasHint')}</p>
+      <h3>${t('extraCalves')}</h3>${seg('extraCalves', [[true, t('on')], [false, t('off')]])}
+      <h3>${t('extraAnkles')}</h3>${seg('extraAnkles', [[true, t('on')], [false, t('off')]])}
+      <h3>${t('extraPogo')}</h3>${seg('extraPogo', [[true, t('on')], [false, t('off')]])}<p class="muted small">${t('extraPogoHint')}</p></section>
     <section class="card"><h2>${t('data')}</h2>
       <p class="muted small">${store.s.lastBackupAt ? t('lastBackup', { when: rel(store.s.lastBackupAt) }) : t('noBackup')}</p>
       <div class="row"><button class="btn primary" data-a="export">${t('exportData')}</button>
@@ -661,12 +694,27 @@ document.addEventListener('click', async e => {
     case 'set': {
       const k = el.dataset.k; let v = el.dataset.v;
       if (['restStrength', 'restCircuit', 'restSides', 'week', 'weightStep'].includes(k)) v = +v;
-      if (k === 'sound') v = v === 'true';
+      if (k === 'sound' || k.startsWith('extra')) v = v === 'true';
       if (k === 'week' && v !== store.settings().week) { store.s.weekStartedAt = new Date().toISOString(); ui.dayId = null; }
       store.setSetting(k, v);
       if (k === 'lang') setLang(v);
       break;
     }
+    case 'log-act': ui.sheet = { type: 'activity' }; break;
+    case 'act-type': case 'act-effort':
+      // Toggle in place so typed values survive.
+      el.parentElement.querySelectorAll('button').forEach(b => b.classList.toggle('on', b === el)); return;
+    case 'act-save': {
+      const f = el.closest('.act-form');
+      const pick = a => f.querySelector(`[data-a=${a}].on`)?.dataset.v;
+      const min = Math.round(+f.querySelector('[data-actmin]').value || 0);
+      const km = +String(f.querySelector('[data-actkm]').value || '').replace(',', '.') || null;
+      const date = f.querySelector('[data-actdate]').value || todayISO();
+      if (!min && !km) { showToast(t('actNeedOne')); return; }
+      store.addActivity({ type: pick('act-type') || 'run', date, min: min || null, km, effort: pick('act-effort') || 'moderate' });
+      ui.sheet = null; render(); showToast(t('actSaved')); return;
+    }
+    case 'act-del': if (confirm(t('deleteActConfirm'))) store.deleteActivity(el.dataset.id); break;
     case 'test-sound': unlockAudio(); setTimeout(() => sound.end(), 50); return;
     case 'export': await exportData(); break;
     case 'reset': if (confirm(t('resetConfirm'))) { store.reset(); setLang('en'); ui.dayId = null; } break;

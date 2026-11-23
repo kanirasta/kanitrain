@@ -6240,6 +6240,374 @@
     "authored": "Home alternative written by Claude, pending review"
    },
    "homeAlternative": true
+  },
+  {
+   "id": "calf_raise_straight_sl",
+   "sourceName": "(extra) Elevación de talón a una pierna, rodilla estirada",
+   "name": {
+    "en": "Single-leg calf raise, straight knee",
+    "es": "Elevación de talón a una pierna, rodilla estirada"
+   },
+   "category": "strength",
+   "region": "lower_quad",
+   "muscles": {
+    "primary": [
+     "calves"
+    ],
+    "secondary": []
+   },
+   "mobilityTargets": [],
+   "equipment": [
+    {
+     "anyOf": [
+      "none"
+     ],
+     "optional": false
+    },
+    {
+     "anyOf": [
+      "dumbbells"
+     ],
+     "optional": true
+    },
+    {
+     "anyOf": [
+      "box"
+     ],
+     "optional": true
+    }
+   ],
+   "laterality": "unilateral",
+   "instructions": {
+    "en": [
+     "Stand on one foot, fingertips on a wall for balance. A step or the table edge under the ball of the foot adds range.",
+     "Keep the knee straight and rise as high as you can onto the big toe.",
+     "Pause 1 second at the top, lower slowly for 3 seconds.",
+     "Start with the left leg. Hold a dumbbell on the same side when it gets easy."
+    ],
+    "es": [
+     "Parate en un pie, con los dedos en la pared para el equilibrio. Un escalón o el borde de la mesa bajo la punta del pie da más recorrido.",
+     "Rodilla estirada, subí lo más alto que puedas sobre el dedo gordo.",
+     "Pausa de 1 segundo arriba, bajá lento en 3 segundos.",
+     "Empezá con la izquierda. Sumá una mancuerna del mismo lado cuando te resulte fácil."
+    ]
+   },
+   "cues": {
+    "en": [
+     "Knee straight",
+     "Slow on the way down"
+    ],
+    "es": [
+     "Rodilla estirada",
+     "Lento al bajar"
+    ]
+   },
+   "videos": [
+    {
+     "youtubeId": "qPd73snQfUs",
+     "startSec": 0,
+     "source": "found",
+     "url": "https://www.youtube.com/watch?v=qPd73snQfUs",
+     "title": "Single-Leg Calf Raise (HSS)",
+     "channel": "Hospital for Special Surgery",
+     "verified": "2026-11-24",
+     "vetted": "2026-11-24"
+    }
+   ],
+   "review": {
+    "confidence": "medium",
+    "flags": [
+     "Optional extra"
+    ],
+    "authored": "Optional extra written by Claude, pending review"
+   },
+   "extra": true
+  },
+  {
+   "id": "calf_raise_bent_sl",
+   "sourceName": "(extra) Elevación de talón a una pierna, rodilla flexionada",
+   "name": {
+    "en": "Single-leg calf raise, bent knee",
+    "es": "Elevación de talón a una pierna, rodilla flexionada"
+   },
+   "category": "strength",
+   "region": "lower_quad",
+   "muscles": {
+    "primary": [
+     "calves"
+    ],
+    "secondary": []
+   },
+   "mobilityTargets": [],
+   "equipment": [
+    {
+     "anyOf": [
+      "none"
+     ],
+     "optional": false
+    },
+    {
+     "anyOf": [
+      "dumbbells"
+     ],
+     "optional": true
+    },
+    {
+     "anyOf": [
+      "box"
+     ],
+     "optional": true
+    }
+   ],
+   "laterality": "unilateral",
+   "instructions": {
+    "en": [
+     "Stand on one foot, hands on a wall, and bend the knee slightly (about 20 to 30 degrees).",
+     "Keep that bend and rise onto the ball of the foot.",
+     "Pause at the top, lower slowly. This one targets the soleus, the deep calf muscle runners rely on.",
+     "Start with the left leg."
+    ],
+    "es": [
+     "Parate en un pie, manos en la pared, y flexioná un poco la rodilla (unos 20 a 30 grados).",
+     "Mantené esa flexión y subí sobre la punta del pie.",
+     "Pausa arriba, bajá lento. Este trabaja el sóleo, el músculo profundo de la pantorrilla que más usa el corredor.",
+     "Empezá con la izquierda."
+    ]
+   },
+   "cues": {
+    "en": [
+     "Keep the knee bent the whole time",
+     "Full height each rep"
+    ],
+    "es": [
+     "Rodilla flexionada todo el tiempo",
+     "Subí al máximo en cada repetición"
+    ]
+   },
+   "videos": [
+    {
+     "youtubeId": "_VEku5gTQeU",
+     "startSec": 0,
+     "source": "found",
+     "url": "https://www.youtube.com/watch?v=_VEku5gTQeU",
+     "title": "Single Leg Bent Knee Calf Raises",
+     "channel": "The BeFit Physio Method",
+     "verified": "2026-11-24",
+     "vetted": "2026-11-24"
+    }
+   ],
+   "review": {
+    "confidence": "medium",
+    "flags": [
+     "Optional extra"
+    ],
+    "authored": "Optional extra written by Claude, pending review"
+   },
+   "extra": true
+  },
+  {
+   "id": "ankle_knee_to_wall",
+   "sourceName": "(extra) Rodilla a la pared para tobillo",
+   "name": {
+    "en": "Knee-to-wall ankle rocks",
+    "es": "Rodilla a la pared para tobillo"
+   },
+   "category": "mobility",
+   "region": "mobility",
+   "muscles": {
+    "primary": [],
+    "secondary": [
+     "calves"
+    ]
+   },
+   "mobilityTargets": [],
+   "equipment": [
+    {
+     "anyOf": [
+      "none"
+     ],
+     "optional": false
+    }
+   ],
+   "laterality": "unilateral",
+   "instructions": {
+    "en": [
+     "Face a wall in a short split stance, front foot a hand width from the wall.",
+     "Keep the heel down and push the knee forward to touch the wall, in line with the middle toes.",
+     "Rock back and repeat. Move the foot back a little when it gets easy."
+    ],
+    "es": [
+     "Frente a la pared en una estocada corta, el pie de adelante a un palmo de la pared.",
+     "Talón apoyado, llevá la rodilla hacia adelante hasta tocar la pared, alineada con los dedos del medio.",
+     "Volvé y repetí. Alejá un poco el pie cuando sea fácil."
+    ]
+   },
+   "cues": {
+    "en": [
+     "Heel stays down",
+     "Knee over the middle toes"
+    ],
+    "es": [
+     "El talón no se levanta",
+     "Rodilla sobre los dedos del medio"
+    ]
+   },
+   "videos": [
+    {
+     "youtubeId": "Y48sAE4m2Uc",
+     "startSec": 0,
+     "source": "found",
+     "url": "https://www.youtube.com/watch?v=Y48sAE4m2Uc",
+     "title": "Mobility: Ankle ROM (knee to wall)",
+     "channel": "Peak Physio",
+     "verified": "2026-11-24",
+     "vetted": "2026-11-24"
+    }
+   ],
+   "review": {
+    "confidence": "medium",
+    "flags": [
+     "Optional extra"
+    ],
+    "authored": "Optional extra written by Claude, pending review"
+   },
+   "extra": true
+  },
+  {
+   "id": "tibialis_wall_raise",
+   "sourceName": "(extra) Elevación de punta contra la pared",
+   "name": {
+    "en": "Tibialis wall raise",
+    "es": "Elevación de punta contra la pared"
+   },
+   "category": "mobility",
+   "region": "mobility",
+   "muscles": {
+    "primary": [],
+    "secondary": []
+   },
+   "mobilityTargets": [],
+   "equipment": [
+    {
+     "anyOf": [
+      "none"
+     ],
+     "optional": false
+    }
+   ],
+   "laterality": "bilateral",
+   "instructions": {
+    "en": [
+     "Lean your back against a wall, feet about a foot in front of you.",
+     "Lift your toes as high as you can, keeping the heels down.",
+     "Lower slowly. Burning on the front of the shin is normal."
+    ],
+    "es": [
+     "Apoyá la espalda en la pared, con los pies unos 30 cm adelante.",
+     "Levantá las puntas de los pies lo más que puedas, talones apoyados.",
+     "Bajá lento. Es normal que arda el frente de la tibia."
+    ]
+   },
+   "cues": {
+    "en": [
+     "Heels down",
+     "Toes all the way up"
+    ],
+    "es": [
+     "Talones apoyados",
+     "Puntas bien arriba"
+    ]
+   },
+   "videos": [
+    {
+     "youtubeId": "nQKgHwi8W9E",
+     "startSec": 0,
+     "source": "found",
+     "url": "https://www.youtube.com/watch?v=nQKgHwi8W9E",
+     "title": "Wall Tibialis Raise",
+     "channel": "PrimeMVMNT",
+     "verified": "2026-11-24",
+     "vetted": "2026-11-24"
+    }
+   ],
+   "review": {
+    "confidence": "medium",
+    "flags": [
+     "Optional extra"
+    ],
+    "authored": "Optional extra written by Claude, pending review"
+   },
+   "extra": true
+  },
+  {
+   "id": "pogo_hops",
+   "sourceName": "(extra) Saltitos pogo",
+   "name": {
+    "en": "Pogo hops",
+    "es": "Saltitos pogo"
+   },
+   "category": "strength",
+   "region": "lower_quad",
+   "muscles": {
+    "primary": [
+     "calves"
+    ],
+    "secondary": [
+     "quads"
+    ]
+   },
+   "mobilityTargets": [],
+   "equipment": [
+    {
+     "anyOf": [
+      "none"
+     ],
+     "optional": false
+    }
+   ],
+   "laterality": "bilateral",
+   "instructions": {
+    "en": [
+     "Stand tall, feet hip width, arms relaxed.",
+     "Bounce off the balls of your feet with small, quick hops, knees almost straight.",
+     "Spend as little time on the ground as possible. Stop the set when the hops get slow or loud."
+    ],
+    "es": [
+     "Parado derecho, pies al ancho de cadera, brazos sueltos.",
+     "Rebotá sobre la punta de los pies con saltitos cortos y rápidos, rodillas casi estiradas.",
+     "Tocá el piso lo menos posible. Cortá la serie cuando los saltos se vuelvan lentos o ruidosos."
+    ]
+   },
+   "cues": {
+    "en": [
+     "Quick and quiet",
+     "Low hops, stiff ankles"
+    ],
+    "es": [
+     "Rápido y silencioso",
+     "Saltos bajos, tobillos firmes"
+    ]
+   },
+   "videos": [
+    {
+     "youtubeId": "W0nK_eBArXM",
+     "startSec": 0,
+     "source": "found",
+     "url": "https://www.youtube.com/watch?v=W0nK_eBArXM",
+     "title": "Low Pogo Jumps",
+     "channel": "Champion Physical Therapy and Performance",
+     "verified": "2026-11-24",
+     "vetted": "2026-11-24"
+    }
+   ],
+   "review": {
+    "confidence": "medium",
+    "flags": [
+     "Optional extra"
+    ],
+    "authored": "Optional extra written by Claude, pending review"
+   },
+   "extra": true
   }
  ]
 }
