@@ -32,7 +32,7 @@ const DEFAULTS = {
 };
 
 let state = load();
-if (!Array.isArray(state.equipment)) { state.equipment = structuredClone(DEFAULT_EQUIPMENT); }
+if (!Array.isArray(state.equipment)) { state.equipment = structuredClone(DEFAULT_EQUIPMENT); try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {} }
 
 function load() {
   try {

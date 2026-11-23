@@ -1,5 +1,5 @@
 // Offline cache. Bump VERSION when any file changes so phones pick up the update.
-const VERSION = '2026-11-24a';
+const VERSION = '2026-11-24b';
 const FILES = [
   './', 'index.html', 'manifest.webmanifest', 'css/app.css',
   'js/app.js', 'js/i18n.js', 'js/store.js', 'js/plan.js', 'js/device.js', 'js/video.js',
