@@ -1,0 +1,11 @@
+{
+  "name": "kanitrain",
+  "private": true,
+  "scripts": {
+    "test": "node tests/e2e.cjs",
+    "test:live": "BASE_URL=https://kanirasta.github.io/kanitrain/ node tests/e2e.cjs"
+  },
+  "devDependencies": {
+    "playwright": "1.63.0"
+  }
+}

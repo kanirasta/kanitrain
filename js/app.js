@@ -7,11 +7,10 @@ import {
 } from './plan.js';
 import { unlockAudio, sound, buzz, keepAwake, isStandalone, isIOS } from './device.js';
 
-export const BUILD = '2026-11-23f';
+export const BUILD = '2026-11-23g';
 const $app = document.getElementById('app');
 const $sheet = document.getElementById('sheet');
 
-let goingBack = false;
 const ui = {
   screen: 'home',       // home | workout | summary | history | settings
   dayId: null,          // day shown on home
@@ -142,11 +141,8 @@ function renderSheet() {
   const sh = ui.sheet;
   if (!sh) {
     $sheet.innerHTML = ''; $sheet.className = ''; delete $sheet.dataset.key; document.body.classList.remove('locked');
-    if (history.state && history.state.sheet && !goingBack) { goingBack = true; history.back(); }
     return;
   }
-  // A history entry per open sheet, so iOS edge-swipe back also closes it.
-  if (!(history.state && history.state.sheet) && !goingBack) history.pushState({ sheet: 1 }, '');
   let body = '';
   if (sh.type === 'ex') body = renderExSheet(sh);
   else if (sh.type === 'days') body = renderDaysSheet();
@@ -685,11 +681,11 @@ function beepCountdown(a, left, tag) {
   if (s >= 1 && s <= 3 && a._beep !== tag + s) { a._beep = tag + s; sound.tick(); }
 }
 
-window.addEventListener('popstate', () => { goingBack = false; if (ui.sheet) { ui.sheet = null; render(); } });
-// iOS can swallow the first click after you touch a YouTube iframe, so close buttons also react to pointerup.
-document.addEventListener('pointerup', e => {
+// iOS can swallow the first click after you touch a YouTube iframe, so close buttons also react to touchend.
+// preventDefault stops the follow-up click from landing on whatever is under the button once the sheet is gone.
+document.addEventListener('touchend', e => {
   if (ui.sheet && e.target.closest('#sheet [data-a=close]')) { e.preventDefault(); ui.sheet = null; render(); }
-});
+}, { passive: false });
 // Close a sheet by dragging its header down (also a fallback if iOS shifts the view after fullscreen video).
 let dragY = null;
 document.addEventListener('touchstart', e => { if (e.target.closest('[data-drag]')) dragY = e.touches[0].clientY; }, { passive: true });
@@ -730,9 +726,11 @@ const ICON = {
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     navigator.serviceWorker.register('sw.js').then(reg => reg.update()).catch(() => {});
     // When a new version takes over, reload once so you are on it right away (not mid-workout).
+    // Only when replacing an older version: the very first install must not reload the page.
+    const hadController = !!navigator.serviceWorker.controller;
     let reloaded = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (reloaded || ui.screen === 'workout') return;
+      if (!hadController || reloaded || ui.screen === 'workout' || ui.sheet) return;
       reloaded = true; location.reload();
     });
   }
