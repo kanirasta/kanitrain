@@ -1,0 +1,1333 @@
+{
+ "schemaVersion": 1,
+ "athleteProfile": {
+  "imbalance": {
+   "weakerSide": "left",
+   "weakerAreas": [
+    "calves",
+    "hamstrings",
+    "glutes"
+   ],
+   "similarStrength": [
+    "quads"
+   ],
+   "note": {
+    "en": "Left leg is weaker, especially lower leg, back of thigh and glutes. Quads are almost equal.",
+    "es": "La pierna izquierda es más débil, sobre todo pantorrilla, isquiosurales y glúteos. Los cuádriceps están casi iguales."
+   },
+   "confirmed": "2026-11-23",
+   "appHint": "On unilateral lower-body exercises, start with the left side and show a reminder."
+  }
+ },
+ "title": {
+  "en": "Weekly plan",
+  "es": "Planificación semanal"
+ },
+ "source": "coach plan PDF",
+ "conventions": {
+  "sets": "total sets; for 'sides' prescriptions, see per-side sets",
+  "per": "reps are counted per side/leg/arm/step when set",
+  "circuit": "'intercalado' = do one set of each exercise in turn, repeat for all sets"
+ },
+ "weeks": [
+  {
+   "week": 1,
+   "days": [
+    {
+     "id": "w1-mon",
+     "weekday": "mon",
+     "name": {
+      "en": "Monday",
+      "es": "Lunes"
+     },
+     "blocks": [
+      {
+       "id": "warmup",
+       "type": "warmup",
+       "items": [
+        {
+         "exerciseId": "warmup_cardio",
+         "sets": 1,
+         "durationSec": 600,
+         "sourceText": "Entrada en calor en bicicleta o caminadora 10 minutos"
+        }
+       ]
+      },
+      {
+       "id": "mobility",
+       "type": "circuit",
+       "name": {
+        "en": "Mobility (circuit)",
+        "es": "Movilidad (intercalado)"
+       },
+       "items": [
+        {
+         "exerciseId": "cat_cow",
+         "sets": 3,
+         "reps": 10,
+         "sourceText": "Lomo de gato 3x10"
+        },
+        {
+         "exerciseId": "knee_to_chest_alt",
+         "sets": 3,
+         "reps": 10,
+         "per": "side",
+         "sourceText": "Rodillas al pecho 3x10 c/lado"
+        },
+        {
+         "exerciseId": "thread_the_needle",
+         "sets": 3,
+         "reps": 10,
+         "per": "side",
+         "sourceText": "Cruzar brazos en cuatro apoyos 3x10 c/lado"
+        }
+       ]
+      },
+      {
+       "id": "activation",
+       "type": "circuit",
+       "name": {
+        "en": "Activation (circuit)",
+        "es": "Activación (intercalados)"
+       },
+       "items": [
+        {
+         "exerciseId": "plank_reach",
+         "sets": 3,
+         "reps": 8,
+         "per": "side",
+         "note": "8 touches per side",
+         "sourceText": "Plancha frontal con toques frontales 3x8 c/toque"
+        },
+        {
+         "exerciseId": "plate_crunch",
+         "sets": 3,
+         "reps": 12,
+         "sourceText": "Abs cortos con disco 3x12"
+        },
+        {
+         "exerciseId": "heel_touches",
+         "sets": 3,
+         "reps": 8,
+         "per": "side",
+         "sourceText": "Toques de talón 3x8 c/lado"
+        }
+       ]
+      },
+      {
+       "id": "main",
+       "type": "straight_sets",
+       "name": {
+        "en": "Main block",
+        "es": "Bloque principal"
+       },
+       "items": [
+        {
+         "exerciseId": "hamstring_walk",
+         "sets": 3,
+         "reps": 8,
+         "per": "step",
+         "note": "Video from minute 1",
+         "sourceText": "Caminata isquiosurales (video min 1) 3x8 c/paso"
+        },
+        {
+         "exerciseId": "db_rdl",
+         "sets": 3,
+         "reps": 10,
+         "sourceText": "Peso muerto bipodal con mancuerna 3x10"
+        },
+        {
+         "exerciseId": "incline_db_press",
+         "sets": 3,
+         "reps": 10,
+         "sourceText": "Pecho inclinado con mancuerna 3x10"
+        },
+        {
+         "exerciseId": "back_squat",
+         "sets": 3,
+         "reps": 10,
+         "sourceText": "Sentadilla con barra en hombros 3x10"
+        },
+        {
+         "exerciseId": "db_curl_alt",
+         "sets": 4,
+         "reps": 8,
+         "per": "arm",
+         "note": "Per arm assumed",
+         "sourceText": "Bíceps alternado 4x8"
+        }
+       ],
+       "note": "PDF gives no order or rest; listed in PDF order. Assumed straight sets."
+      }
+     ],
+     "muscleLoad": {
+      "glutes": 7.5,
+      "hamstrings": 6,
+      "lower_back": 4.5,
+      "biceps": 4,
+      "chest": 3,
+      "quads": 3,
+      "forearms": 2.0,
+      "upper_back": 1.5,
+      "front_delts": 1.5,
+      "triceps": 1.5,
+      "adductors": 1.5,
+      "abs": 1.5
+     },
+     "equipment": [
+      "adjustable_bench",
+      "barbell",
+      "dumbbells",
+      "mat",
+      "plate",
+      "squat_rack",
+      "stationary_bike/treadmill"
+     ]
+    },
+    {
+     "id": "w1-wed",
+     "weekday": "wed",
+     "name": {
+      "en": "Wednesday",
+      "es": "Miércoles"
+     },
+     "blocks": [
+      {
+       "id": "warmup",
+       "type": "warmup",
+       "items": [
+        {
+         "exerciseId": "warmup_cardio",
+         "sets": 1,
+         "durationSec": 600,
+         "sourceText": "Entrada en calor en bicicleta o caminadora 10 minutos"
+        }
+       ]
+      },
+      {
+       "id": "mobility",
+       "type": "circuit",
+       "name": {
+        "en": "Mobility (circuit)",
+        "es": "Movilidad (intercalado)"
+       },
+       "items": [
+        {
+         "exerciseId": "pelvic_tilt",
+         "sets": 3,
+         "reps": 10,
+         "sourceText": "Básculas de pelvis 3x10"
+        },
+        {
+         "exerciseId": "open_book",
+         "sets": 3,
+         "reps": 10,
+         "per": "side",
+         "sourceText": "De costado abrir brazos 3x10 c/lado"
+        },
+        {
+         "exerciseId": "hip_90_90",
+         "sets": 3,
+         "reps": 10,
+         "per": "side",
+         "sourceText": "Cadera 90°-90° 3x10 c/lado"
+        }
+       ]
+      },
+      {
+       "id": "activation",
+       "type": "circuit",
+       "name": {
+        "en": "Activation (circuit)",
+        "es": "Activación (intercalados)"
+       },
+       "items": [
+        {
+         "exerciseId": "dead_bug",
+         "sets": 3,
+         "reps": 8,
+         "per": "side",
+         "sourceText": "Bicho muerto 3x8 c/lado"
+        },
+        {
+         "exerciseId": "superman_alt",
+         "sets": 3,
+         "reps": 8,
+         "per": "side",
+         "sourceText": "Superman 3x8 c/lado"
+        },
+        {
+         "exerciseId": "side_lying_oblique_crunch",
+         "sets": 3,
+         "reps": 8,
+         "per": "side",
+         "sourceText": "Oblicuos a los lados 3x8 c/lado"
+        }
+       ]
+      },
+      {
+       "id": "main",
+       "type": "straight_sets",
+       "name": {
+        "en": "Main block",
+        "es": "Bloque principal"
+       },
+       "items": [
+        {
+         "exerciseId": "inchworm",
+         "sets": 3,
+         "reps": 8,
+         "note": "Stand all the way up each rep",
+         "sourceText": "Caminata con manos desde parado 3x8 (llego a pararme del todo)"
+        },
+        {
+         "exerciseId": "banded_clamshell",
+         "sets": 3,
+         "reps": 8,
+         "per": "side",
+         "sourceText": "Almejas (aperturas laterales con banda) 3x8 c/lado"
+        },
+        {
+         "exerciseId": "lateral_step_up",
+         "sets": 6,
+         "reps": 8,
+         "per": "side",
+         "sides": {
+          "left": {
+           "sets": 4,
+           "reps": 8
+          },
+          "right": {
+           "sets": 2,
+           "reps": 8
+          }
+         },
+         "sourceText": "Subida cajón lateral 4x8 izq / 2x8 der"
+        },
+        {
+         "exerciseId": "single_arm_db_bench",
+         "sets": 4,
+         "reps": 8,
+         "per": "arm",
+         "sourceText": "Pecho plano uni 4x8 c/brazos"
+        },
+        {
+         "exerciseId": "single_leg_rdl",
+         "sets": 4,
+         "reps": 12,
+         "per": "side",
+         "sourceText": "Peso muerto uni 4x12 c/lado"
+        },
+        {
+         "exerciseId": "db_overhead_press",
+         "sets": 3,
+         "reps": 10,
+         "sourceText": "Press militar 3x10"
+        },
+        {
+         "exerciseId": "leg_extension_2up1down",
+         "sets": 6,
+         "reps": 8,
+         "per": "side",
+         "sides": {
+          "left": {
+           "sets": 4,
+           "reps": 8
+          },
+          "right": {
+           "sets": 2,
+           "reps": 8
+          }
+         },
+         "sourceText": "Camilla cuadriceps (subo con dos, bajo con una) 4x8 izq / 2x8 der"
+        }
+       ],
+       "note": "PDF gives no order or rest; listed in PDF order. Assumed straight sets."
+      }
+     ],
+     "muscleLoad": {
+      "quads": 12,
+      "glutes": 11.5,
+      "glute_med": 8.0,
+      "hamstrings": 7,
+      "front_delts": 6.5,
+      "chest": 5.5,
+      "triceps": 5.0,
+      "abs": 4.5,
+      "side_delts": 3,
+      "obliques": 2.0,
+      "lower_back": 2.0
+     },
+     "equipment": [
+      "box",
+      "dumbbells",
+      "dumbbells/barbell",
+      "flat_bench",
+      "leg_extension_machine",
+      "mat",
+      "mini_band",
+      "stationary_bike/treadmill"
+     ]
+    },
+    {
+     "id": "w1-fri",
+     "weekday": "fri",
+     "name": {
+      "en": "Friday",
+      "es": "Viernes"
+     },
+     "blocks": [
+      {
+       "id": "warmup",
+       "type": "warmup",
+       "items": [
+        {
+         "exerciseId": "warmup_cardio",
+         "sets": 1,
+         "durationSec": 600,
+         "sourceText": "Entrada en calor en bicicleta o caminadora 10 minutos"
+        }
+       ]
+      },
+      {
+       "id": "mobility",
+       "type": "circuit",
+       "name": {
+        "en": "Mobility (circuit)",
+        "es": "Movilidad (intercalado)"
+       },
+       "items": [
+        {
+         "exerciseId": "heel_slides",
+         "sets": 3,
+         "reps": 10,
+         "per": "side",
+         "sourceText": "Doblar y estirar rodillas 3x10 c/lado"
+        },
+        {
+         "exerciseId": "knee_windshield_wipers",
+         "sets": 3,
+         "reps": 10,
+         "per": "side",
+         "sourceText": "Rodilla a los lados 3x10 c/lado"
+        },
+        {
+         "exerciseId": "rock_back_quadruped",
+         "sets": 3,
+         "reps": 10,
+         "sourceText": "Sentarse sobre talones + 4 apoyos 3x10"
+        }
+       ]
+      },
+      {
+       "id": "activation",
+       "type": "circuit",
+       "name": {
+        "en": "Activation (circuit)",
+        "es": "Activación (intercalados)"
+       },
+       "items": [
+        {
+         "exerciseId": "donkey_kick",
+         "sets": 3,
+         "reps": 10,
+         "per": "leg",
+         "sourceText": "Patadas 3x10 c/pierna"
+        },
+        {
+         "exerciseId": "side_plank",
+         "sets": 3,
+         "durationSec": 20,
+         "per": "side",
+         "note": "Per side assumed",
+         "sourceText": "Plancha lateral 3x20segundos"
+        },
+        {
+         "exerciseId": "pallof_press",
+         "sets": 3,
+         "reps": 10,
+         "per": "side",
+         "note": "Standing, not kneeling",
+         "sourceText": "Pallof press (video, pero parada) 3x10 c/lado"
+        }
+       ]
+      },
+      {
+       "id": "main",
+       "type": "straight_sets",
+       "name": {
+        "en": "Main block",
+        "es": "Bloque principal"
+       },
+       "items": [
+        {
+         "exerciseId": "sl_glute_bridge_box",
+         "sets": 3,
+         "reps": 10,
+         "per": "side",
+         "sourceText": "Puente glúteo unipodal sobre cajón 3x10 c/lado"
+        },
+        {
+         "exerciseId": "single_arm_db_row",
+         "sets": 3,
+         "reps": 8,
+         "per": "side",
+         "sourceText": "Remo unilateral 3x8 c/lado"
+        },
+        {
+         "exerciseId": "db_thruster",
+         "sets": 3,
+         "reps": 10,
+         "sourceText": "Sentadilla + press militar 3x10"
+        },
+        {
+         "exerciseId": "db_bench_press",
+         "sets": 3,
+         "reps": 10,
+         "sourceText": "Pecho plano con mancuernas 3x10"
+        }
+       ],
+       "note": "PDF gives no order or rest; listed in PDF order. Assumed straight sets."
+      }
+     ],
+     "muscleLoad": {
+      "glutes": 4.5,
+      "front_delts": 4.5,
+      "lats": 3,
+      "upper_back": 3,
+      "quads": 3,
+      "triceps": 3.0,
+      "chest": 3,
+      "hamstrings": 1.5,
+      "biceps": 1.5,
+      "rear_delts": 1.5,
+      "side_delts": 1.5,
+      "abs": 1.5
+     },
+     "equipment": [
+      "box/flat_bench",
+      "dumbbells",
+      "flat_bench",
+      "mat",
+      "resistance_band/cable_machine",
+      "stationary_bike/treadmill"
+     ]
+    }
+   ]
+  },
+  {
+   "week": 2,
+   "days": [
+    {
+     "id": "w2-mon",
+     "weekday": "mon",
+     "name": {
+      "en": "Monday",
+      "es": "Lunes"
+     },
+     "blocks": [
+      {
+       "id": "warmup",
+       "type": "warmup",
+       "items": [
+        {
+         "exerciseId": "warmup_cardio",
+         "sets": 1,
+         "durationSec": 600,
+         "sourceText": "Entrada en calor en bicicleta o caminadora 10 minutos"
+        }
+       ]
+      },
+      {
+       "id": "mobility",
+       "type": "circuit",
+       "name": {
+        "en": "Mobility (circuit)",
+        "es": "Movilidad (intercalado)"
+       },
+       "items": [
+        {
+         "exerciseId": "cat_cow",
+         "sets": 3,
+         "reps": 10,
+         "sourceText": "Lomo de gato 3x10"
+        },
+        {
+         "exerciseId": "knee_to_chest_alt",
+         "sets": 3,
+         "reps": 10,
+         "per": "side",
+         "sourceText": "Rodillas al pecho 3x10 c/lado"
+        },
+        {
+         "exerciseId": "thread_the_needle",
+         "sets": 3,
+         "reps": 10,
+         "per": "side",
+         "sourceText": "Cruzar brazos en cuatro apoyos 3x10 c/lado"
+        }
+       ]
+      },
+      {
+       "id": "activation",
+       "type": "circuit",
+       "name": {
+        "en": "Activation (circuit)",
+        "es": "Activación (intercalados)"
+       },
+       "items": [
+        {
+         "exerciseId": "plank_reach",
+         "sets": 3,
+         "reps": 8,
+         "per": "side",
+         "note": "8 touches per side",
+         "sourceText": "Plancha frontal con toques frontales 3x8 c/toque"
+        },
+        {
+         "exerciseId": "plate_crunch",
+         "sets": 3,
+         "reps": 12,
+         "sourceText": "Abs cortos con disco 3x12"
+        },
+        {
+         "exerciseId": "heel_touches",
+         "sets": 3,
+         "reps": 8,
+         "per": "side",
+         "sourceText": "Toques de talón 3x8 c/lado"
+        }
+       ]
+      },
+      {
+       "id": "main",
+       "type": "straight_sets",
+       "name": {
+        "en": "Main block",
+        "es": "Bloque principal"
+       },
+       "items": [
+        {
+         "exerciseId": "single_arm_lat_pulldown",
+         "sets": 3,
+         "reps": 8,
+         "per": "side",
+         "sourceText": "Dorsales unilaterales 3x8 c/lado"
+        },
+        {
+         "exerciseId": "ball_wall_squat_plate",
+         "sets": 4,
+         "reps": 8,
+         "sourceText": "Sentadilla con pelota en pared + disco hacia adelante 4x8"
+        },
+        {
+         "exerciseId": "db_lateral_raise",
+         "sets": 3,
+         "reps": 12,
+         "sourceText": "Vuelos laterales 3x12"
+        },
+        {
+         "exerciseId": "lunge_front_lateral_plate_press",
+         "sets": 3,
+         "reps": 8,
+         "per": "side",
+         "sourceText": "Estocada frontal y lateral + empuje frontal disco 3x8 c/lado"
+        }
+       ],
+       "note": "PDF gives no order or rest; listed in PDF order. Assumed straight sets."
+      }
+     ],
+     "muscleLoad": {
+      "quads": 7,
+      "glutes": 7,
+      "front_delts": 3.5,
+      "abs": 3.5,
+      "lats": 3,
+      "side_delts": 3,
+      "biceps": 1.5,
+      "upper_back": 1.5,
+      "traps": 1.5,
+      "adductors": 1.5
+     },
+     "equipment": [
+      "cable_machine",
+      "dumbbells",
+      "mat",
+      "plate",
+      "stability_ball",
+      "stationary_bike/treadmill"
+     ]
+    },
+    {
+     "id": "w2-wed",
+     "weekday": "wed",
+     "name": {
+      "en": "Wednesday",
+      "es": "Miércoles"
+     },
+     "blocks": [
+      {
+       "id": "warmup",
+       "type": "warmup",
+       "items": [
+        {
+         "exerciseId": "warmup_cardio",
+         "sets": 1,
+         "durationSec": 600,
+         "sourceText": "Entrada en calor en bicicleta o caminadora 10 minutos"
+        }
+       ]
+      },
+      {
+       "id": "mobility",
+       "type": "circuit",
+       "name": {
+        "en": "Mobility (circuit)",
+        "es": "Movilidad (intercalado)"
+       },
+       "items": [
+        {
+         "exerciseId": "pelvic_tilt",
+         "sets": 3,
+         "reps": 10,
+         "sourceText": "Básculas de pelvis 3x10"
+        },
+        {
+         "exerciseId": "open_book",
+         "sets": 3,
+         "reps": 10,
+         "per": "side",
+         "sourceText": "De costado abrir brazos 3x10 c/lado"
+        },
+        {
+         "exerciseId": "hip_90_90",
+         "sets": 3,
+         "reps": 10,
+         "per": "side",
+         "sourceText": "Cadera 90°-90° 3x10 c/lado"
+        }
+       ]
+      },
+      {
+       "id": "activation",
+       "type": "circuit",
+       "name": {
+        "en": "Activation (circuit)",
+        "es": "Activación (intercalados)"
+       },
+       "items": [
+        {
+         "exerciseId": "dead_bug",
+         "sets": 3,
+         "reps": 8,
+         "per": "side",
+         "sourceText": "Bicho muerto 3x8 c/lado"
+        },
+        {
+         "exerciseId": "superman_alt",
+         "sets": 3,
+         "reps": 8,
+         "per": "side",
+         "sourceText": "Superman 3x8 c/lado"
+        },
+        {
+         "exerciseId": "side_lying_oblique_crunch",
+         "sets": 3,
+         "reps": 8,
+         "per": "side",
+         "sourceText": "Oblicuos a los lados 3x8 c/lado"
+        }
+       ]
+      },
+      {
+       "id": "main",
+       "type": "straight_sets",
+       "name": {
+        "en": "Main block",
+        "es": "Bloque principal"
+       },
+       "items": [
+        {
+         "exerciseId": "sl_glute_bridge_ball",
+         "sets": 3,
+         "reps": 8,
+         "per": "leg",
+         "sourceText": "Puente glúteo uni en pelota 3x8 c/pierna"
+        },
+        {
+         "exerciseId": "barbell_hip_thrust",
+         "sets": 3,
+         "reps": 10,
+         "sourceText": "Hip thrust barra 3x10"
+        },
+        {
+         "exerciseId": "single_leg_rdl",
+         "sets": 3,
+         "reps": 8,
+         "per": "side",
+         "sourceText": "Peso muerto uni 3x8 c/lado"
+        },
+        {
+         "exerciseId": "db_chest_fly",
+         "sets": 3,
+         "reps": 10,
+         "sourceText": "Apertura de pecho 3x10"
+        },
+        {
+         "exerciseId": "plate_overhead_triceps",
+         "sets": 3,
+         "reps": 10,
+         "sourceText": "Tríceps disco 3x10"
+        },
+        {
+         "exerciseId": "db_front_raise",
+         "sets": 3,
+         "reps": 10,
+         "sourceText": "Vuelo frontal 3x10"
+        }
+       ],
+       "note": "PDF gives no order or rest; listed in PDF order. Assumed straight sets."
+      }
+     ],
+     "muscleLoad": {
+      "glutes": 9,
+      "hamstrings": 7.5,
+      "front_delts": 4.5,
+      "chest": 3,
+      "triceps": 3,
+      "abs": 1.5,
+      "quads": 1.5,
+      "glute_med": 1.5,
+      "lower_back": 1.5,
+      "side_delts": 1.5,
+      "upper_back": 1.5
+     },
+     "equipment": [
+      "bar_pad",
+      "barbell",
+      "dumbbells",
+      "dumbbells/plate",
+      "flat_bench",
+      "mat",
+      "plate",
+      "stability_ball",
+      "stationary_bike/treadmill"
+     ]
+    },
+    {
+     "id": "w2-fri",
+     "weekday": "fri",
+     "name": {
+      "en": "Friday",
+      "es": "Viernes"
+     },
+     "blocks": [
+      {
+       "id": "warmup",
+       "type": "warmup",
+       "items": [
+        {
+         "exerciseId": "warmup_cardio",
+         "sets": 1,
+         "durationSec": 600,
+         "sourceText": "Entrada en calor en bicicleta o caminadora 10 minutos"
+        }
+       ]
+      },
+      {
+       "id": "mobility",
+       "type": "circuit",
+       "name": {
+        "en": "Mobility (circuit)",
+        "es": "Movilidad (intercalado)"
+       },
+       "items": [
+        {
+         "exerciseId": "heel_slides",
+         "sets": 3,
+         "reps": 10,
+         "per": "side",
+         "sourceText": "Doblar y estirar rodillas 3x10 c/lado"
+        },
+        {
+         "exerciseId": "knee_windshield_wipers",
+         "sets": 3,
+         "reps": 10,
+         "per": "side",
+         "sourceText": "Rodilla a los lados 3x10 c/lado"
+        },
+        {
+         "exerciseId": "rock_back_quadruped",
+         "sets": 3,
+         "reps": 10,
+         "sourceText": "Sentarse sobre talones + 4 apoyos 3x10"
+        }
+       ]
+      },
+      {
+       "id": "activation",
+       "type": "circuit",
+       "name": {
+        "en": "Activation (circuit)",
+        "es": "Activación (intercalados)"
+       },
+       "items": [
+        {
+         "exerciseId": "donkey_kick",
+         "sets": 3,
+         "reps": 10,
+         "per": "leg",
+         "sourceText": "Patadas 3x10 c/pierna"
+        },
+        {
+         "exerciseId": "side_plank",
+         "sets": 3,
+         "durationSec": 20,
+         "per": "side",
+         "note": "Per side assumed",
+         "sourceText": "Plancha lateral 3x20segundos"
+        },
+        {
+         "exerciseId": "pallof_press",
+         "sets": 3,
+         "reps": 10,
+         "per": "side",
+         "note": "Standing, not kneeling",
+         "sourceText": "Pallof press (video, pero parada) 3x10 c/lado"
+        }
+       ]
+      },
+      {
+       "id": "main",
+       "type": "straight_sets",
+       "name": {
+        "en": "Main block",
+        "es": "Bloque principal"
+       },
+       "items": [
+        {
+         "exerciseId": "monster_walk",
+         "sets": 3,
+         "reps": 8,
+         "note": "2 steps left + 2 steps right = 1 rep",
+         "sourceText": "Monster walk (2 pasos izq + 2 pasos der = 1 repe) 3x8 reps"
+        },
+        {
+         "exerciseId": "db_sumo_squat",
+         "sets": 3,
+         "reps": 10,
+         "sourceText": "Sentadilla sumo 3x10"
+        },
+        {
+         "exerciseId": "inverted_row",
+         "sets": 3,
+         "reps": 8,
+         "sourceText": "Remo invertido 3x8"
+        },
+        {
+         "exerciseId": "lunge_band_adduction",
+         "sets": 3,
+         "reps": 10,
+         "per": "side",
+         "note": "Per side assumed",
+         "sourceText": "Estocada + banda a add 3x10"
+        },
+        {
+         "exerciseId": "good_morning",
+         "sets": 3,
+         "reps": 10,
+         "sourceText": "Buenos días 3x10"
+        }
+       ],
+       "note": "PDF gives no order or rest; listed in PDF order. Assumed straight sets."
+      }
+     ],
+     "muscleLoad": {
+      "glutes": 9.0,
+      "quads": 7.5,
+      "glute_med": 4.5,
+      "adductors": 4.5,
+      "abs": 3.0,
+      "upper_back": 3,
+      "lats": 3,
+      "hamstrings": 3,
+      "lower_back": 3,
+      "biceps": 1.5,
+      "rear_delts": 1.5
+     },
+     "equipment": [
+      "barbell/dumbbells/none",
+      "dumbbells/kettlebell",
+      "mat",
+      "mini_band",
+      "resistance_band",
+      "resistance_band/cable_machine",
+      "smith_machine/barbell/trx",
+      "stationary_bike/treadmill"
+     ]
+    }
+   ]
+  },
+  {
+   "week": 3,
+   "days": [
+    {
+     "id": "w3-mon",
+     "weekday": "mon",
+     "name": {
+      "en": "Monday",
+      "es": "Lunes"
+     },
+     "blocks": [
+      {
+       "id": "warmup",
+       "type": "warmup",
+       "items": [
+        {
+         "exerciseId": "warmup_cardio",
+         "sets": 1,
+         "durationSec": 600,
+         "sourceText": "Entrada en calor en bicicleta o caminadora 10 minutos"
+        }
+       ]
+      },
+      {
+       "id": "activation",
+       "type": "circuit",
+       "name": {
+        "en": "Activation (circuit)",
+        "es": "Activación (intercalados)"
+       },
+       "items": [
+        {
+         "exerciseId": "plank_reach",
+         "sets": 3,
+         "reps": 8,
+         "per": "side",
+         "note": "8 touches per side",
+         "sourceText": "Plancha frontal con toques frontales 3x8 c/toque"
+        },
+        {
+         "exerciseId": "plate_crunch",
+         "sets": 3,
+         "reps": 12,
+         "sourceText": "Abs cortos con disco 3x12"
+        },
+        {
+         "exerciseId": "heel_touches",
+         "sets": 3,
+         "reps": 8,
+         "per": "side",
+         "sourceText": "Toques de talón 3x8 c/lado"
+        }
+       ]
+      },
+      {
+       "id": "main",
+       "type": "straight_sets",
+       "name": {
+        "en": "Main block",
+        "es": "Bloque principal"
+       },
+       "items": [
+        {
+         "exerciseId": "leg_curl_2up1down",
+         "sets": 3,
+         "reps": 8,
+         "sourceText": "Camilla isquiosurales (subo con dos, bajo con una) 3x8"
+        },
+        {
+         "exerciseId": "plate_rebound_squat",
+         "sets": 3,
+         "reps": 10,
+         "sourceText": "Rebotes con disco 3x10"
+        },
+        {
+         "exerciseId": "pallof_press_rotation",
+         "sets": 3,
+         "reps": 10,
+         "per": "side",
+         "note": "Per side assumed",
+         "sourceText": "Pallof press + rotaciones 3x10"
+        },
+        {
+         "exerciseId": "arnold_press",
+         "sets": 3,
+         "reps": 8,
+         "sourceText": "Arnold 3x8"
+        },
+        {
+         "exerciseId": "bulgarian_split_squat",
+         "sets": 3,
+         "reps": 8,
+         "per": "side",
+         "note": "Per leg assumed",
+         "sourceText": "Búlgaras 3x8"
+        }
+       ],
+       "note": "PDF gives no order or rest; listed in PDF order. Assumed straight sets."
+      }
+     ],
+     "muscleLoad": {
+      "glutes": 7.5,
+      "quads": 6,
+      "hamstrings": 3,
+      "calves": 3.0,
+      "adductors": 3.0,
+      "abs": 3.0,
+      "obliques": 3,
+      "front_delts": 3,
+      "side_delts": 3,
+      "triceps": 1.5,
+      "glute_med": 1.5
+     },
+     "equipment": [
+      "dumbbells",
+      "flat_bench",
+      "leg_curl_machine",
+      "mat",
+      "plate",
+      "resistance_band/cable_machine",
+      "stationary_bike/treadmill"
+     ]
+    },
+    {
+     "id": "w3-wed",
+     "weekday": "wed",
+     "name": {
+      "en": "Wednesday",
+      "es": "Miércoles"
+     },
+     "blocks": [
+      {
+       "id": "warmup",
+       "type": "warmup",
+       "items": [
+        {
+         "exerciseId": "warmup_cardio",
+         "sets": 1,
+         "durationSec": 600,
+         "sourceText": "Entrada en calor en bicicleta o caminadora 10 minutos"
+        }
+       ]
+      },
+      {
+       "id": "activation",
+       "type": "circuit",
+       "name": {
+        "en": "Activation (circuit)",
+        "es": "Activación (intercalados)"
+       },
+       "items": [
+        {
+         "exerciseId": "dead_bug",
+         "sets": 3,
+         "reps": 8,
+         "per": "side",
+         "sourceText": "Bicho muerto 3x8 c/lado"
+        },
+        {
+         "exerciseId": "superman_alt",
+         "sets": 3,
+         "reps": 8,
+         "per": "side",
+         "sourceText": "Superman 3x8 c/lado"
+        },
+        {
+         "exerciseId": "side_lying_oblique_crunch",
+         "sets": 3,
+         "reps": 8,
+         "per": "side",
+         "sourceText": "Oblicuos a los lados 3x8 c/lado"
+        }
+       ]
+      },
+      {
+       "id": "main",
+       "type": "straight_sets",
+       "name": {
+        "en": "Main block",
+        "es": "Bloque principal"
+       },
+       "items": [
+        {
+         "exerciseId": "back_squat",
+         "sets": 3,
+         "reps": 12,
+         "sourceText": "Sentadilla barra 3x12"
+        },
+        {
+         "exerciseId": "cable_reverse_fly_single",
+         "sets": 3,
+         "reps": 10,
+         "per": "side",
+         "sourceText": "Vuelos posteriores con polea 3x10 c/lado"
+        },
+        {
+         "exerciseId": "box_step_up",
+         "sets": 3,
+         "reps": 8,
+         "per": "side",
+         "sourceText": "Subida frontal cajón 3x8 c/lado"
+        },
+        {
+         "exerciseId": "banded_hip_flexion_march",
+         "sets": 3,
+         "reps": 8,
+         "per": "leg",
+         "sourceText": "Rodilla arriba c/banda en pies 3x8 c/pie"
+        },
+        {
+         "exerciseId": "db_bench_press_heavy",
+         "sets": 3,
+         "reps": 8,
+         "note": "Heavier than week 1",
+         "sourceText": "Pecho plano 3x8 (más cargado)"
+        }
+       ],
+       "note": "PDF gives no order or rest; listed in PDF order. Assumed straight sets."
+      }
+     ],
+     "muscleLoad": {
+      "quads": 6,
+      "glutes": 6,
+      "abs": 3.0,
+      "rear_delts": 3,
+      "hip_flexors": 3,
+      "chest": 3,
+      "adductors": 1.5,
+      "lower_back": 1.5,
+      "upper_back": 1.5,
+      "hamstrings": 1.5,
+      "glute_med": 1.5,
+      "front_delts": 1.5,
+      "triceps": 1.5
+     },
+     "equipment": [
+      "barbell",
+      "box",
+      "cable_machine",
+      "dumbbells",
+      "flat_bench",
+      "mat",
+      "mini_band",
+      "squat_rack",
+      "stationary_bike/treadmill"
+     ]
+    },
+    {
+     "id": "w3-fri",
+     "weekday": "fri",
+     "name": {
+      "en": "Friday",
+      "es": "Viernes"
+     },
+     "blocks": [
+      {
+       "id": "warmup",
+       "type": "warmup",
+       "items": [
+        {
+         "exerciseId": "warmup_cardio",
+         "sets": 1,
+         "durationSec": 600,
+         "sourceText": "Entrada en calor en bicicleta o caminadora 10 minutos"
+        }
+       ]
+      },
+      {
+       "id": "activation",
+       "type": "circuit",
+       "name": {
+        "en": "Activation (circuit)",
+        "es": "Activación (intercalados)"
+       },
+       "items": [
+        {
+         "exerciseId": "donkey_kick",
+         "sets": 3,
+         "reps": 10,
+         "per": "leg",
+         "sourceText": "Patadas 3x10 c/pierna"
+        },
+        {
+         "exerciseId": "side_plank",
+         "sets": 3,
+         "durationSec": 20,
+         "per": "side",
+         "note": "Per side assumed",
+         "sourceText": "Plancha lateral 3x20segundos"
+        },
+        {
+         "exerciseId": "pallof_press",
+         "sets": 3,
+         "reps": 10,
+         "per": "side",
+         "note": "Standing, not kneeling",
+         "sourceText": "Pallof press (video, pero parada) 3x10 c/lado"
+        }
+       ]
+      },
+      {
+       "id": "main",
+       "type": "straight_sets",
+       "name": {
+        "en": "Main block",
+        "es": "Bloque principal"
+       },
+       "items": [
+        {
+         "exerciseId": "adductor_squeeze_3pos",
+         "sets": 3,
+         "durationSec": 20,
+         "note": "20 s in each of 3 positions per set",
+         "sourceText": "Aductores en tres posiciones (apretando pelota chica) 3x20s en cada posición"
+        },
+        {
+         "exerciseId": "seated_cable_row",
+         "sets": 3,
+         "reps": 12,
+         "sourceText": "Remo c/polea 3x12"
+        },
+        {
+         "exerciseId": "db_forward_lunge",
+         "sets": 3,
+         "reps": 8,
+         "per": "leg",
+         "sourceText": "Estocada frontal c/mancuernas a los lados 3x8 c/pierna"
+        },
+        {
+         "exerciseId": "leg_press",
+         "sets": 3,
+         "reps": 10,
+         "sourceText": "Prensa 3x10"
+        }
+       ],
+       "note": "PDF gives no order or rest; listed in PDF order. Assumed straight sets."
+      }
+     ],
+     "muscleLoad": {
+      "adductors": 6.0,
+      "quads": 6,
+      "glutes": 6,
+      "upper_back": 3,
+      "lats": 3,
+      "hamstrings": 3.0,
+      "abs": 1.5,
+      "biceps": 1.5,
+      "rear_delts": 1.5
+     },
+     "equipment": [
+      "cable_machine",
+      "dumbbells",
+      "leg_press_machine",
+      "mat",
+      "resistance_band/cable_machine",
+      "small_ball",
+      "stationary_bike/treadmill"
+     ]
+    }
+   ]
+  }
+ ]
+}

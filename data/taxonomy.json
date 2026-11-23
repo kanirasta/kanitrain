@@ -1,0 +1,235 @@
+{
+  "schemaVersion": 1,
+  "muscles": {
+    "chest": {
+      "en": "Chest",
+      "es": "Pecho"
+    },
+    "lats": {
+      "en": "Lats",
+      "es": "Dorsales"
+    },
+    "upper_back": {
+      "en": "Upper back",
+      "es": "Espalda alta"
+    },
+    "traps": {
+      "en": "Traps",
+      "es": "Trapecios"
+    },
+    "front_delts": {
+      "en": "Front delts",
+      "es": "Deltoides anterior"
+    },
+    "side_delts": {
+      "en": "Side delts",
+      "es": "Deltoides lateral"
+    },
+    "rear_delts": {
+      "en": "Rear delts",
+      "es": "Deltoides posterior"
+    },
+    "biceps": {
+      "en": "Biceps",
+      "es": "Bíceps"
+    },
+    "triceps": {
+      "en": "Triceps",
+      "es": "Tríceps"
+    },
+    "forearms": {
+      "en": "Forearms",
+      "es": "Antebrazos"
+    },
+    "abs": {
+      "en": "Abs",
+      "es": "Abdominales"
+    },
+    "obliques": {
+      "en": "Obliques",
+      "es": "Oblicuos"
+    },
+    "lower_back": {
+      "en": "Lower back",
+      "es": "Zona lumbar"
+    },
+    "glutes": {
+      "en": "Glutes",
+      "es": "Glúteos"
+    },
+    "glute_med": {
+      "en": "Glute medius (hip abductors)",
+      "es": "Glúteo medio (abductores)"
+    },
+    "adductors": {
+      "en": "Adductors",
+      "es": "Aductores"
+    },
+    "hip_flexors": {
+      "en": "Hip flexors",
+      "es": "Flexores de cadera"
+    },
+    "quads": {
+      "en": "Quads",
+      "es": "Cuádriceps"
+    },
+    "hamstrings": {
+      "en": "Hamstrings",
+      "es": "Isquiosurales"
+    },
+    "calves": {
+      "en": "Calves",
+      "es": "Gemelos"
+    }
+  },
+  "mobilityTargets": {
+    "thoracic_spine": {
+      "en": "Upper back (thoracic)",
+      "es": "Columna dorsal"
+    },
+    "lumbar_spine": {
+      "en": "Low back (lumbar)",
+      "es": "Columna lumbar"
+    },
+    "hips": {
+      "en": "Hips",
+      "es": "Caderas"
+    },
+    "knees": {
+      "en": "Knees",
+      "es": "Rodillas"
+    },
+    "shoulders": {
+      "en": "Shoulders",
+      "es": "Hombros"
+    }
+  },
+  "regions": {
+    "upper_push": {
+      "en": "Upper push",
+      "es": "Empuje superior"
+    },
+    "upper_pull": {
+      "en": "Upper pull",
+      "es": "Tracción superior"
+    },
+    "lower_quad": {
+      "en": "Lower, knee dominant",
+      "es": "Tren inferior, dominante de rodilla"
+    },
+    "lower_hinge": {
+      "en": "Lower, hip dominant",
+      "es": "Tren inferior, dominante de cadera"
+    },
+    "core": {
+      "en": "Core",
+      "es": "Core"
+    },
+    "full_body": {
+      "en": "Full body",
+      "es": "Cuerpo completo"
+    },
+    "mobility": {
+      "en": "Mobility",
+      "es": "Movilidad"
+    },
+    "cardio": {
+      "en": "Cardio",
+      "es": "Cardio"
+    }
+  },
+  "equipment": {
+    "mat": {
+      "en": "Mat",
+      "es": "Colchoneta"
+    },
+    "dumbbells": {
+      "en": "Dumbbells",
+      "es": "Mancuernas"
+    },
+    "kettlebell": {
+      "en": "Kettlebell",
+      "es": "Pesa rusa"
+    },
+    "barbell": {
+      "en": "Barbell",
+      "es": "Barra"
+    },
+    "squat_rack": {
+      "en": "Squat rack",
+      "es": "Rack de sentadilla"
+    },
+    "flat_bench": {
+      "en": "Flat bench",
+      "es": "Banco plano"
+    },
+    "adjustable_bench": {
+      "en": "Adjustable bench",
+      "es": "Banco regulable"
+    },
+    "plate": {
+      "en": "Weight plate",
+      "es": "Disco"
+    },
+    "box": {
+      "en": "Box / step",
+      "es": "Cajón"
+    },
+    "resistance_band": {
+      "en": "Long resistance band",
+      "es": "Banda elástica larga"
+    },
+    "mini_band": {
+      "en": "Mini band",
+      "es": "Mini banda"
+    },
+    "cable_machine": {
+      "en": "Cable machine",
+      "es": "Polea"
+    },
+    "stability_ball": {
+      "en": "Stability ball",
+      "es": "Pelota suiza"
+    },
+    "small_ball": {
+      "en": "Small soft ball",
+      "es": "Pelota chica"
+    },
+    "leg_extension_machine": {
+      "en": "Leg extension machine",
+      "es": "Camilla de cuádriceps"
+    },
+    "leg_curl_machine": {
+      "en": "Leg curl machine",
+      "es": "Camilla de isquiosurales"
+    },
+    "leg_press_machine": {
+      "en": "Leg press",
+      "es": "Prensa"
+    },
+    "smith_machine": {
+      "en": "Smith machine",
+      "es": "Máquina Smith"
+    },
+    "trx": {
+      "en": "Suspension trainer (TRX)",
+      "es": "TRX"
+    },
+    "bar_pad": {
+      "en": "Barbell pad",
+      "es": "Almohadilla para barra"
+    },
+    "stationary_bike": {
+      "en": "Stationary bike",
+      "es": "Bicicleta fija"
+    },
+    "treadmill": {
+      "en": "Treadmill",
+      "es": "Caminadora"
+    },
+    "none": {
+      "en": "None",
+      "es": "Ninguno"
+    }
+  }
+}
