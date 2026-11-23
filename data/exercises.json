@@ -1388,7 +1388,17 @@
      "PDF video shows the kneeling version; the note says to do it standing. A standing demo is added as second video."
     ],
     "authored": "Names (EN/ES), instructions, cues, muscles, equipment and non-PDF videos written or chosen by Claude"
-   }
+   },
+   "alternatives": [
+    {
+     "exerciseId": "plank_shoulder_taps",
+     "fit": "good",
+     "note": {
+      "en": "No long band or cable. Shoulder taps train the same anti-rotation.",
+      "es": "Sin banda larga ni polea. Los toques de hombro entrenan la misma anti-rotación."
+     }
+    }
+   ]
   },
   {
    "id": "hamstring_walk",
@@ -1605,7 +1615,17 @@
     "confidence": "high",
     "flags": [],
     "authored": "Names (EN/ES), instructions, cues, muscles, equipment and non-PDF videos written or chosen by Claude"
-   }
+   },
+   "alternatives": [
+    {
+     "exerciseId": "landmine_press_single",
+     "fit": "partial",
+     "note": {
+      "en": "No bench at home. The landmine press hits the upper chest at a similar angle, but lighter.",
+      "es": "Sin banco en casa. El landmine trabaja el pecho alto en un ángulo parecido, pero más liviano."
+     }
+    }
+   ]
   },
   {
    "id": "back_squat",
@@ -1685,7 +1705,17 @@
     "confidence": "high",
     "flags": [],
     "authored": "Names (EN/ES), instructions, cues, muscles, equipment and non-PDF videos written or chosen by Claude"
-   }
+   },
+   "alternatives": [
+    {
+     "exerciseId": "goblet_squat_tempo",
+     "fit": "partial",
+     "note": {
+      "en": "No squat rack and only 10 kg dumbbells, so the load is much lower. Slow tempo helps.",
+      "es": "Sin rack y con mancuernas de 10 kg la carga es mucho menor. El tempo lento ayuda."
+     }
+    }
+   ]
   },
   {
    "id": "db_curl_alt",
@@ -2055,7 +2085,17 @@
     "confidence": "high",
     "flags": [],
     "authored": "Names (EN/ES), instructions, cues, muscles, equipment and non-PDF videos written or chosen by Claude"
-   }
+   },
+   "alternatives": [
+    {
+     "exerciseId": "single_arm_db_floor_press",
+     "fit": "good",
+     "note": {
+      "en": "Same movement on the floor, slightly shorter range.",
+      "es": "Mismo movimiento en el piso, con un poco menos de recorrido."
+     }
+    }
+   ]
   },
   {
    "id": "single_leg_rdl",
@@ -2271,7 +2311,17 @@
      "Asymmetric on purpose: left leg is weaker. Javier says quads are almost equal left to right, so the extra left sets here may be worth checking with the coach."
     ],
     "authored": "Names (EN/ES), instructions, cues, muscles, equipment and non-PDF videos written or chosen by Claude"
-   }
+   },
+   "alternatives": [
+    {
+     "exerciseId": "single_leg_box_squat",
+     "fit": "partial",
+     "note": {
+      "en": "No leg extension machine. Slow single-leg lowering keeps the eccentric quad work.",
+      "es": "Sin camilla. Bajar lento a una pierna mantiene el trabajo excéntrico de cuádriceps."
+     }
+    }
+   ]
   },
   {
    "id": "sl_glute_bridge_box",
@@ -2378,7 +2428,8 @@
     },
     {
      "anyOf": [
-      "flat_bench"
+      "flat_bench",
+      "box"
      ],
      "optional": false
     }
@@ -2575,7 +2626,17 @@
     "confidence": "high",
     "flags": [],
     "authored": "Names (EN/ES), instructions, cues, muscles, equipment and non-PDF videos written or chosen by Claude"
-   }
+   },
+   "alternatives": [
+    {
+     "exerciseId": "db_floor_press",
+     "fit": "good",
+     "note": {
+      "en": "Same press on the floor, slightly shorter range.",
+      "es": "Mismo press en el piso, con un poco menos de recorrido."
+     }
+    }
+   ]
   },
   {
    "id": "single_arm_lat_pulldown",
@@ -2647,7 +2708,17 @@
      "'Dorsales unilaterales' read as single-arm lat pulldown; could be a single-arm cable row"
     ],
     "authored": "Names (EN/ES), instructions, cues, muscles, equipment and non-PDF videos written or chosen by Claude"
-   }
+   },
+   "alternatives": [
+    {
+     "exerciseId": "pull_up_negative",
+     "fit": "good",
+     "note": {
+      "en": "No cable. Slow pull-up negatives on your bar train the lats harder.",
+      "es": "Sin polea. Las dominadas negativas en tu barra trabajan más los dorsales."
+     }
+    }
+   ]
   },
   {
    "id": "ball_wall_squat_plate",
@@ -2726,7 +2797,17 @@
      "Unclear if the plate is pressed forward on each rep or held out the whole set; video shows the squat only"
     ],
     "authored": "Names (EN/ES), instructions, cues, muscles, equipment and non-PDF videos written or chosen by Claude"
-   }
+   },
+   "alternatives": [
+    {
+     "exerciseId": "wall_sit_plate",
+     "fit": "good",
+     "note": {
+      "en": "No stability ball. Same hold against the wall.",
+      "es": "Sin pelota suiza. El mismo sostén contra la pared."
+     }
+    }
+   ]
   },
   {
    "id": "db_lateral_raise",
@@ -2949,7 +3030,17 @@
     "confidence": "high",
     "flags": [],
     "authored": "Names (EN/ES), instructions, cues, muscles, equipment and non-PDF videos written or chosen by Claude"
-   }
+   },
+   "alternatives": [
+    {
+     "exerciseId": "sl_glute_bridge_floor",
+     "fit": "good",
+     "note": {
+      "en": "No stability ball. Floor version, less balance work.",
+      "es": "Sin pelota suiza. Versión en el piso, con menos equilibrio."
+     }
+    }
+   ]
   },
   {
    "id": "barbell_hip_thrust",
@@ -3033,7 +3124,17 @@
     "confidence": "high",
     "flags": [],
     "authored": "Names (EN/ES), instructions, cues, muscles, equipment and non-PDF videos written or chosen by Claude"
-   }
+   },
+   "alternatives": [
+    {
+     "exerciseId": "sl_glute_bridge_floor",
+     "fit": "partial",
+     "note": {
+      "en": "No bench or pad and the bar only goes to 12.5 kg. Single-leg bridges load the glutes better, left first.",
+      "es": "Sin banco ni almohadilla y la barra llega a 12,5 kg. El puente a una pierna carga mejor los glúteos, empezando por la izquierda."
+     }
+    }
+   ]
   },
   {
    "id": "db_chest_fly",
@@ -3110,7 +3211,17 @@
      "Assumed dumbbell fly on a bench; could be cable or pec deck machine"
     ],
     "authored": "Names (EN/ES), instructions, cues, muscles, equipment and non-PDF videos written or chosen by Claude"
-   }
+   },
+   "alternatives": [
+    {
+     "exerciseId": "db_floor_fly",
+     "fit": "good",
+     "note": {
+      "en": "Same fly on the floor.",
+      "es": "Las mismas aperturas en el piso."
+     }
+    }
+   ]
   },
   {
    "id": "plate_overhead_triceps",
@@ -3549,7 +3660,17 @@
      "Confirmed by Javier. The band pulls the knee inward and you resist it, which trains the glute medius to keep the knee aligned. Good fit for the weaker left glute."
     ],
     "authored": "Names (EN/ES), instructions, cues, muscles, equipment and non-PDF videos written or chosen by Claude"
-   }
+   },
+   "alternatives": [
+    {
+     "exerciseId": "split_squat_mini_band",
+     "fit": "good",
+     "note": {
+      "en": "No long band. A mini band at the knees gives the same inward pull.",
+      "es": "Sin banda larga. La mini banda en las rodillas da el mismo tirón hacia adentro."
+     }
+    }
+   ]
   },
   {
    "id": "good_morning",
@@ -3694,7 +3815,17 @@
      "PDF says 3x8 without 'c/lado'; unclear if 8 per leg"
     ],
     "authored": "Names (EN/ES), instructions, cues, muscles, equipment and non-PDF videos written or chosen by Claude"
-   }
+   },
+   "alternatives": [
+    {
+     "exerciseId": "prone_db_leg_curl",
+     "fit": "partial",
+     "note": {
+      "en": "No leg curl machine. Slow lowering with a dumbbell, much lighter.",
+      "es": "Sin camilla. Bajada lenta con mancuerna, mucho más liviano."
+     }
+    }
+   ]
   },
   {
    "id": "plate_rebound_squat",
@@ -3853,7 +3984,17 @@
      "Assumed 10 per side"
     ],
     "authored": "Names (EN/ES), instructions, cues, muscles, equipment and non-PDF videos written or chosen by Claude"
-   }
+   },
+   "alternatives": [
+    {
+     "exerciseId": "half_kneeling_db_chop",
+     "fit": "good",
+     "note": {
+      "en": "No long band or cable. The chop trains the same rotation.",
+      "es": "Sin banda larga ni polea. El leñador entrena la misma rotación."
+     }
+    }
+   ]
   },
   {
    "id": "arnold_press",
@@ -4002,7 +4143,17 @@
      "PDF says 3x8 without 'c/lado'; assumed 8 per leg. Load not specified."
     ],
     "authored": "Names (EN/ES), instructions, cues, muscles, equipment and non-PDF videos written or chosen by Claude"
-   }
+   },
+   "alternatives": [
+    {
+     "exerciseId": "db_split_squat_deficit",
+     "fit": "good",
+     "note": {
+      "en": "No bench and the table is too high for the back foot. A deficit split squat works the same muscles.",
+      "es": "Sin banco y la mesa es muy alta para el pie de atrás. La estocada con déficit trabaja lo mismo."
+     }
+    }
+   ]
   },
   {
    "id": "cable_reverse_fly_single",
@@ -4071,7 +4222,17 @@
     "confidence": "high",
     "flags": [],
     "authored": "Names (EN/ES), instructions, cues, muscles, equipment and non-PDF videos written or chosen by Claude"
-   }
+   },
+   "alternatives": [
+    {
+     "exerciseId": "bent_over_db_reverse_fly_single",
+     "fit": "good",
+     "note": {
+      "en": "No cable. Same move with a light dumbbell.",
+      "es": "Sin polea. El mismo movimiento con mancuerna liviana."
+     }
+    }
+   ]
   },
   {
    "id": "box_step_up",
@@ -4297,7 +4458,17 @@
      "Could be barbell bench press. In the app this is the same exercise as db_bench_press with a 'heavier' note; kept separate only to track the note."
     ],
     "authored": "Names (EN/ES), instructions, cues, muscles, equipment and non-PDF videos written or chosen by Claude"
-   }
+   },
+   "alternatives": [
+    {
+     "exerciseId": "db_floor_press",
+     "fit": "partial",
+     "note": {
+      "en": "Week 3 asks for heavier loads than your 10 kg dumbbells.",
+      "es": "La semana 3 pide más carga que tus mancuernas de 10 kg."
+     }
+    }
+   ]
   },
   {
    "id": "adductor_squeeze_3pos",
@@ -4374,7 +4545,17 @@
      "The three positions are a guess based on the standard 0/45/90 degree adductor squeeze test"
     ],
     "authored": "Names (EN/ES), instructions, cues, muscles, equipment and non-PDF videos written or chosen by Claude"
-   }
+   },
+   "alternatives": [
+    {
+     "exerciseId": "adductor_squeeze_mat",
+     "fit": "good",
+     "note": {
+      "en": "No small ball. Squeeze the rolled-up mat.",
+      "es": "Sin pelota chica. Apretá la colchoneta enrollada."
+     }
+    }
+   ]
   },
   {
    "id": "seated_cable_row",
@@ -4446,7 +4627,17 @@
     "confidence": "high",
     "flags": [],
     "authored": "Names (EN/ES), instructions, cues, muscles, equipment and non-PDF videos written or chosen by Claude"
-   }
+   },
+   "alternatives": [
+    {
+     "exerciseId": "table_inverted_row",
+     "fit": "good",
+     "note": {
+      "en": "No cable. Rowing under a sturdy table trains the same back muscles.",
+      "es": "Sin polea. Remar debajo de una mesa firme trabaja los mismos músculos."
+     }
+    }
+   ]
   },
   {
    "id": "db_forward_lunge",
@@ -4588,7 +4779,1366 @@
     "confidence": "high",
     "flags": [],
     "authored": "Names (EN/ES), instructions, cues, muscles, equipment and non-PDF videos written or chosen by Claude"
-   }
+   },
+   "alternatives": [
+    {
+     "exerciseId": "heel_elevated_goblet_squat",
+     "fit": "partial",
+     "note": {
+      "en": "No leg press and 10 kg max, so the load is much lower.",
+      "es": "Sin prensa y con 10 kg como máximo, la carga es mucho menor."
+     }
+    }
+   ]
+  },
+  {
+   "id": "db_floor_press",
+   "sourceName": "(home alternative) Press de pecho en el piso con mancuernas",
+   "name": {
+    "en": "Dumbbell floor press",
+    "es": "Press de pecho en el piso con mancuernas"
+   },
+   "category": "strength",
+   "region": "upper_push",
+   "muscles": {
+    "primary": [
+     "chest",
+     "triceps"
+    ],
+    "secondary": [
+     "front_delts"
+    ]
+   },
+   "mobilityTargets": [],
+   "equipment": [
+    {
+     "anyOf": [
+      "dumbbells"
+     ],
+     "optional": false
+    },
+    {
+     "anyOf": [
+      "mat"
+     ],
+     "optional": false
+    }
+   ],
+   "laterality": "bilateral",
+   "instructions": {
+    "en": [
+     "Lie on your back on the mat, knees bent, a dumbbell in each hand above your chest.",
+     "Lower the dumbbells until your upper arms touch the floor, elbows about 45 degrees from your body.",
+     "Pause briefly with the arms resting on the floor.",
+     "Press back up until your arms are straight."
+    ],
+    "es": [
+     "Acostado boca arriba en la colchoneta, rodillas flexionadas, una mancuerna en cada mano sobre el pecho.",
+     "Bajá hasta que la parte de atrás del brazo toque el piso, codos a unos 45 grados del cuerpo.",
+     "Pausa corta con los brazos apoyados.",
+     "Empujá hasta estirar los brazos."
+    ]
+   },
+   "cues": {
+    "en": [
+     "Pause on the floor, no bounce",
+     "Shoulder blades pulled back",
+     "Slow on the way down"
+    ],
+    "es": [
+     "Pausa en el piso, sin rebotar",
+     "Escápulas atrás",
+     "Lento al bajar"
+    ]
+   },
+   "videos": [
+    {
+     "youtubeId": "T0Y3OBF1bNI",
+     "startSec": 0,
+     "source": "found",
+     "url": "https://www.youtube.com/watch?v=T0Y3OBF1bNI",
+     "title": "How To Do A Dumbbell Floor Press",
+     "channel": "PureGym",
+     "verified": "2026-11-23",
+     "vetted": "2026-11-23"
+    }
+   ],
+   "review": {
+    "confidence": "medium",
+    "flags": [
+     "Home alternative"
+    ],
+    "authored": "Home alternative written by Claude, pending review"
+   },
+   "homeAlternative": true
+  },
+  {
+   "id": "single_arm_db_floor_press",
+   "sourceName": "(home alternative) Press de pecho unilateral en el piso",
+   "name": {
+    "en": "Single-arm dumbbell floor press",
+    "es": "Press de pecho unilateral en el piso"
+   },
+   "category": "strength",
+   "region": "upper_push",
+   "muscles": {
+    "primary": [
+     "chest",
+     "triceps"
+    ],
+    "secondary": [
+     "front_delts",
+     "obliques"
+    ]
+   },
+   "mobilityTargets": [],
+   "equipment": [
+    {
+     "anyOf": [
+      "dumbbells"
+     ],
+     "optional": false
+    },
+    {
+     "anyOf": [
+      "mat"
+     ],
+     "optional": false
+    }
+   ],
+   "laterality": "unilateral",
+   "instructions": {
+    "en": [
+     "Lie on your back, knees bent, one dumbbell above your chest.",
+     "Lower until the upper arm touches the floor.",
+     "Press up without letting your body roll toward the weight.",
+     "Do all reps, then switch arms."
+    ],
+    "es": [
+     "Boca arriba, rodillas flexionadas, una mancuerna sobre el pecho.",
+     "Bajá hasta que el brazo toque el piso.",
+     "Empujá sin dejar que el cuerpo gire hacia la pesa.",
+     "Hacé todas y cambiá de brazo."
+    ]
+   },
+   "cues": {
+    "en": [
+     "Free hand on your belly to feel the core",
+     "Hips stay level"
+    ],
+    "es": [
+     "La otra mano en el abdomen para sentir el core",
+     "Cadera nivelada"
+    ]
+   },
+   "videos": [
+    {
+     "youtubeId": "YgAJxNnwXow",
+     "startSec": 0,
+     "source": "found",
+     "url": "https://www.youtube.com/watch?v=YgAJxNnwXow",
+     "title": "Single Arm DB Floor Press",
+     "channel": "Theory of Motion",
+     "verified": "2026-11-23",
+     "vetted": "2026-11-23"
+    }
+   ],
+   "review": {
+    "confidence": "medium",
+    "flags": [
+     "Home alternative"
+    ],
+    "authored": "Home alternative written by Claude, pending review"
+   },
+   "homeAlternative": true
+  },
+  {
+   "id": "db_floor_fly",
+   "sourceName": "(home alternative) Aperturas en el piso con mancuernas",
+   "name": {
+    "en": "Dumbbell floor fly",
+    "es": "Aperturas en el piso con mancuernas"
+   },
+   "category": "strength",
+   "region": "upper_push",
+   "muscles": {
+    "primary": [
+     "chest"
+    ],
+    "secondary": [
+     "front_delts"
+    ]
+   },
+   "mobilityTargets": [],
+   "equipment": [
+    {
+     "anyOf": [
+      "dumbbells"
+     ],
+     "optional": false
+    },
+    {
+     "anyOf": [
+      "mat"
+     ],
+     "optional": false
+    }
+   ],
+   "laterality": "bilateral",
+   "instructions": {
+    "en": [
+     "Lie on your back, dumbbells above your chest, palms facing each other, elbows slightly bent.",
+     "Open your arms out to the sides until your upper arms touch the floor.",
+     "Squeeze your chest to bring the dumbbells back together."
+    ],
+    "es": [
+     "Boca arriba, mancuernas sobre el pecho, palmas enfrentadas, codos apenas flexionados.",
+     "Abrí los brazos a los costados hasta que toquen el piso.",
+     "Apretá el pecho para volver a juntar las mancuernas."
+    ]
+   },
+   "cues": {
+    "en": [
+     "Same elbow bend all the way",
+     "Floor stops the stretch, keep it soft"
+    ],
+    "es": [
+     "Mismo ángulo de codo todo el recorrido",
+     "El piso marca el final, apoyá suave"
+    ]
+   },
+   "videos": [
+    {
+     "youtubeId": "bgC53-J-6gA",
+     "startSec": 0,
+     "source": "found",
+     "url": "https://www.youtube.com/watch?v=bgC53-J-6gA",
+     "title": "How To Do A Dumbbell Floor Fly",
+     "channel": "PureGym",
+     "verified": "2026-11-23",
+     "vetted": "2026-11-23"
+    }
+   ],
+   "review": {
+    "confidence": "medium",
+    "flags": [
+     "Home alternative"
+    ],
+    "authored": "Home alternative written by Claude, pending review"
+   },
+   "homeAlternative": true
+  },
+  {
+   "id": "landmine_press_single",
+   "sourceName": "(home alternative) Press landmine unilateral",
+   "name": {
+    "en": "Single-arm landmine press",
+    "es": "Press landmine unilateral"
+   },
+   "category": "strength",
+   "region": "upper_push",
+   "muscles": {
+    "primary": [
+     "chest",
+     "front_delts"
+    ],
+    "secondary": [
+     "triceps",
+     "abs"
+    ]
+   },
+   "mobilityTargets": [],
+   "equipment": [
+    {
+     "anyOf": [
+      "barbell"
+     ],
+     "optional": false
+    }
+   ],
+   "laterality": "unilateral",
+   "instructions": {
+    "en": [
+     "Wedge one end of the bar into a corner, with a towel to protect the wall.",
+     "Stand in a split stance holding the free end at shoulder height with one hand.",
+     "Press up and forward until the arm is straight.",
+     "Lower with control. Do all reps, then switch arms."
+    ],
+    "es": [
+     "Calzá una punta de la barra en una esquina, con una toalla para proteger la pared.",
+     "Parate en posición de estocada, sosteniendo la otra punta a la altura del hombro con una mano.",
+     "Empujá hacia arriba y adelante hasta estirar el brazo.",
+     "Bajá controlado. Hacé todas y cambiá de brazo."
+    ]
+   },
+   "cues": {
+    "en": [
+     "Lean slightly into the bar",
+     "Ribs down, no arching"
+    ],
+    "es": [
+     "Inclinate un poco hacia la barra",
+     "Costillas abajo, sin arquear"
+    ]
+   },
+   "videos": [
+    {
+     "youtubeId": "t9GuiNQo1O4",
+     "startSec": 0,
+     "source": "found",
+     "url": "https://www.youtube.com/watch?v=t9GuiNQo1O4",
+     "title": "How To Do The Landmine Shoulder Press",
+     "channel": "Ian Nimblett",
+     "verified": "2026-11-23",
+     "vetted": "2026-11-23"
+    }
+   ],
+   "review": {
+    "confidence": "medium",
+    "flags": [
+     "Home alternative"
+    ],
+    "authored": "Home alternative written by Claude, pending review"
+   },
+   "homeAlternative": true
+  },
+  {
+   "id": "goblet_squat_tempo",
+   "sourceName": "(home alternative) Sentadilla goblet con tempo lento",
+   "name": {
+    "en": "Goblet squat, slow tempo",
+    "es": "Sentadilla goblet con tempo lento"
+   },
+   "category": "strength",
+   "region": "lower_quad",
+   "muscles": {
+    "primary": [
+     "quads",
+     "glutes"
+    ],
+    "secondary": [
+     "adductors",
+     "abs"
+    ]
+   },
+   "mobilityTargets": [],
+   "equipment": [
+    {
+     "anyOf": [
+      "dumbbells"
+     ],
+     "optional": false
+    }
+   ],
+   "laterality": "bilateral",
+   "instructions": {
+    "en": [
+     "Hold one dumbbell vertically against your chest, feet a bit wider than hips.",
+     "Take 3 seconds to squat down as deep as you can with a flat back.",
+     "Pause 1 second at the bottom.",
+     "Stand up strong."
+    ],
+    "es": [
+     "Sostené una mancuerna vertical contra el pecho, pies un poco más anchos que la cadera.",
+     "Bajá en 3 segundos tan profundo como puedas con la espalda recta.",
+     "Pausa 1 segundo abajo.",
+     "Subí con fuerza."
+    ]
+   },
+   "cues": {
+    "en": [
+     "3 seconds down, 1 second pause",
+     "Knees track over toes",
+     "Chest up"
+    ],
+    "es": [
+     "3 segundos bajando, 1 de pausa",
+     "Rodillas en línea con los pies",
+     "Pecho arriba"
+    ]
+   },
+   "videos": [
+    {
+     "youtubeId": "dxtgqrJC6gI",
+     "startSec": 0,
+     "source": "found",
+     "url": "https://www.youtube.com/watch?v=dxtgqrJC6gI",
+     "title": "How to do a Goblet Squat",
+     "channel": "Denvyr",
+     "verified": "2026-11-23",
+     "vetted": "2026-11-23"
+    }
+   ],
+   "review": {
+    "confidence": "medium",
+    "flags": [
+     "Home alternative"
+    ],
+    "authored": "Home alternative written by Claude, pending review"
+   },
+   "homeAlternative": true
+  },
+  {
+   "id": "heel_elevated_goblet_squat",
+   "sourceName": "(home alternative) Sentadilla goblet con talones elevados",
+   "name": {
+    "en": "Heel-elevated goblet squat",
+    "es": "Sentadilla goblet con talones elevados"
+   },
+   "category": "strength",
+   "region": "lower_quad",
+   "muscles": {
+    "primary": [
+     "quads"
+    ],
+    "secondary": [
+     "glutes"
+    ]
+   },
+   "mobilityTargets": [],
+   "equipment": [
+    {
+     "anyOf": [
+      "dumbbells"
+     ],
+     "optional": false
+    },
+    {
+     "anyOf": [
+      "plate"
+     ],
+     "optional": false
+    }
+   ],
+   "laterality": "bilateral",
+   "instructions": {
+    "en": [
+     "Put your heels on the weight plates, toes on the floor.",
+     "Hold one dumbbell against your chest.",
+     "Squat straight down, letting the knees travel forward.",
+     "Stand up and squeeze the thighs at the top."
+    ],
+    "es": [
+     "Apoyá los talones sobre los discos, puntas en el piso.",
+     "Sostené una mancuerna contra el pecho.",
+     "Bajá recto dejando que las rodillas vayan hacia adelante.",
+     "Subí y apretá los muslos arriba."
+    ]
+   },
+   "cues": {
+    "en": [
+     "Torso stays upright",
+     "Slow down, steady up"
+    ],
+    "es": [
+     "Torso erguido",
+     "Lento al bajar, firme al subir"
+    ]
+   },
+   "videos": [
+    {
+     "youtubeId": "3dLIa1YljLs",
+     "startSec": 0,
+     "source": "found",
+     "url": "https://www.youtube.com/watch?v=3dLIa1YljLs",
+     "title": "Heels Elevated Goblet Squat",
+     "channel": "The Active Life",
+     "verified": "2026-11-23",
+     "vetted": "2026-11-23"
+    }
+   ],
+   "review": {
+    "confidence": "medium",
+    "flags": [
+     "Home alternative"
+    ],
+    "authored": "Home alternative written by Claude, pending review"
+   },
+   "homeAlternative": true
+  },
+  {
+   "id": "single_leg_box_squat",
+   "sourceName": "(home alternative) Sentarse y pararse a una pierna (bajada lenta)",
+   "name": {
+    "en": "Single-leg sit to stand (slow lowering)",
+    "es": "Sentarse y pararse a una pierna (bajada lenta)"
+   },
+   "category": "strength",
+   "region": "lower_quad",
+   "muscles": {
+    "primary": [
+     "quads",
+     "glutes"
+    ],
+    "secondary": [
+     "glute_med"
+    ]
+   },
+   "mobilityTargets": [],
+   "equipment": [
+    {
+     "anyOf": [
+      "box"
+     ],
+     "optional": false
+    }
+   ],
+   "laterality": "unilateral",
+   "instructions": {
+    "en": [
+     "Stand in front of the table or box on one leg, the other foot slightly lifted.",
+     "Take 3 seconds to sit back down onto the edge.",
+     "Use both legs to stand back up.",
+     "Repeat, then switch legs. Start with the left."
+    ],
+    "es": [
+     "Parate frente a la mesa o cajón sobre una pierna, el otro pie apenas levantado.",
+     "Bajá en 3 segundos hasta sentarte en el borde.",
+     "Usá las dos piernas para pararte.",
+     "Repetí y cambiá de pierna. Empezá con la izquierda."
+    ]
+   },
+   "cues": {
+    "en": [
+     "Down on one leg, up on two",
+     "Knee in line with the foot"
+    ],
+    "es": [
+     "Bajás con una, subís con dos",
+     "Rodilla en línea con el pie"
+    ]
+   },
+   "videos": [
+    {
+     "youtubeId": "r2iNWgKa4aI",
+     "startSec": 0,
+     "source": "found",
+     "url": "https://www.youtube.com/watch?v=r2iNWgKa4aI",
+     "title": "Single Leg Squat to Box - Eccentric Focus",
+     "channel": "Jacobs Fitness",
+     "verified": "2026-11-23",
+     "vetted": "2026-11-23"
+    }
+   ],
+   "review": {
+    "confidence": "medium",
+    "flags": [
+     "Home alternative"
+    ],
+    "authored": "Home alternative written by Claude, pending review"
+   },
+   "homeAlternative": true
+  },
+  {
+   "id": "prone_db_leg_curl",
+   "sourceName": "(home alternative) Curl femoral boca abajo con mancuerna",
+   "name": {
+    "en": "Prone dumbbell leg curl",
+    "es": "Curl femoral boca abajo con mancuerna"
+   },
+   "category": "strength",
+   "region": "lower_hinge",
+   "muscles": {
+    "primary": [
+     "hamstrings"
+    ],
+    "secondary": [
+     "calves"
+    ]
+   },
+   "mobilityTargets": [],
+   "equipment": [
+    {
+     "anyOf": [
+      "dumbbells"
+     ],
+     "optional": false
+    },
+    {
+     "anyOf": [
+      "mat"
+     ],
+     "optional": false
+    }
+   ],
+   "laterality": "bilateral",
+   "instructions": {
+    "en": [
+     "Lie face down on the mat and hold a light dumbbell between your feet.",
+     "Curl your heels toward your glutes.",
+     "Take 3 seconds to lower back down.",
+     "Keep your hips pressed into the floor."
+    ],
+    "es": [
+     "Acostado boca abajo, sostené una mancuerna liviana entre los pies.",
+     "Llevá los talones hacia los glúteos.",
+     "Bajá en 3 segundos.",
+     "Mantené la cadera apoyada en el piso."
+    ]
+   },
+   "cues": {
+    "en": [
+     "Slow lowering is the point",
+     "Hips stay down"
+    ],
+    "es": [
+     "Lo importante es bajar lento",
+     "Cadera apoyada"
+    ]
+   },
+   "videos": [
+    {
+     "youtubeId": "JJLs3nvMyaI",
+     "startSec": 0,
+     "source": "found",
+     "url": "https://www.youtube.com/watch?v=JJLs3nvMyaI",
+     "title": "Prone Dumbbell Hamstring Curl",
+     "channel": "98 Training",
+     "verified": "2026-11-23",
+     "vetted": "2026-11-23"
+    }
+   ],
+   "review": {
+    "confidence": "medium",
+    "flags": [
+     "Home alternative"
+    ],
+    "authored": "Home alternative written by Claude, pending review"
+   },
+   "homeAlternative": true
+  },
+  {
+   "id": "pull_up_negative",
+   "sourceName": "(home alternative) Dominadas negativas",
+   "name": {
+    "en": "Pull-up negatives",
+    "es": "Dominadas negativas"
+   },
+   "category": "strength",
+   "region": "upper_pull",
+   "muscles": {
+    "primary": [
+     "lats"
+    ],
+    "secondary": [
+     "biceps",
+     "upper_back"
+    ]
+   },
+   "mobilityTargets": [],
+   "equipment": [
+    {
+     "anyOf": [
+      "pull_up_bar"
+     ],
+     "optional": false
+    }
+   ],
+   "laterality": "bilateral",
+   "instructions": {
+    "en": [
+     "Use a chair or jump to get your chin over the bar.",
+     "Lower yourself as slowly as you can, 3 to 5 seconds.",
+     "Reach full hang, step back up and repeat.",
+     "If you can do full pull-ups, do those instead."
+    ],
+    "es": [
+     "Usá una silla o saltá para quedar con el mentón sobre la barra.",
+     "Bajá lo más lento que puedas, 3 a 5 segundos.",
+     "Llegá a brazos estirados, volvé a subir y repetí.",
+     "Si podés hacer dominadas completas, hacé esas."
+    ]
+   },
+   "cues": {
+    "en": [
+     "Shoulders down, away from ears",
+     "Control the whole way"
+    ],
+    "es": [
+     "Hombros abajo, lejos de las orejas",
+     "Control todo el recorrido"
+    ]
+   },
+   "videos": [
+    {
+     "youtubeId": "EkpJkHpJXmM",
+     "startSec": 0,
+     "source": "found",
+     "url": "https://www.youtube.com/watch?v=EkpJkHpJXmM",
+     "title": "Negative Pull-Up",
+     "channel": "Bulldog Gear",
+     "verified": "2026-11-23",
+     "vetted": "2026-11-23"
+    }
+   ],
+   "review": {
+    "confidence": "medium",
+    "flags": [
+     "Home alternative"
+    ],
+    "authored": "Home alternative written by Claude, pending review"
+   },
+   "homeAlternative": true
+  },
+  {
+   "id": "table_inverted_row",
+   "sourceName": "(home alternative) Remo invertido debajo de la mesa",
+   "name": {
+    "en": "Inverted row under a table",
+    "es": "Remo invertido debajo de la mesa"
+   },
+   "category": "strength",
+   "region": "upper_pull",
+   "muscles": {
+    "primary": [
+     "upper_back",
+     "lats"
+    ],
+    "secondary": [
+     "biceps",
+     "rear_delts"
+    ]
+   },
+   "mobilityTargets": [],
+   "equipment": [
+    {
+     "anyOf": [
+      "box"
+     ],
+     "optional": false
+    }
+   ],
+   "laterality": "bilateral",
+   "instructions": {
+    "en": [
+     "Lie under a sturdy table and grip its edge with both hands, shoulder width.",
+     "Keep your body straight from shoulders to heels, or bend the knees to make it easier.",
+     "Pull your chest up to the edge.",
+     "Lower slowly. Check the table is stable before you start."
+    ],
+    "es": [
+     "Acostate debajo de una mesa firme y agarrá el borde con las dos manos, al ancho de hombros.",
+     "Cuerpo recto de hombros a talones, o rodillas flexionadas para hacerlo más fácil.",
+     "Tirá hasta llevar el pecho al borde.",
+     "Bajá lento. Verificá que la mesa sea estable antes de empezar."
+    ]
+   },
+   "cues": {
+    "en": [
+     "Squeeze shoulder blades together",
+     "Hips stay up"
+    ],
+    "es": [
+     "Juntá las escápulas",
+     "Cadera arriba"
+    ]
+   },
+   "videos": [
+    {
+     "youtubeId": "VM4vTHqUkp0",
+     "startSec": 0,
+     "source": "found",
+     "url": "https://www.youtube.com/watch?v=VM4vTHqUkp0",
+     "title": "Inverted Table Rows (Home Workout)",
+     "channel": "Step1 Fitness",
+     "verified": "2026-11-23",
+     "vetted": "2026-11-23"
+    }
+   ],
+   "review": {
+    "confidence": "medium",
+    "flags": [
+     "Home alternative"
+    ],
+    "authored": "Home alternative written by Claude, pending review"
+   },
+   "homeAlternative": true
+  },
+  {
+   "id": "bent_over_db_reverse_fly_single",
+   "sourceName": "(home alternative) Vuelos posteriores unilaterales inclinado",
+   "name": {
+    "en": "Single-arm bent-over reverse fly",
+    "es": "Vuelos posteriores unilaterales inclinado"
+   },
+   "category": "strength",
+   "region": "upper_pull",
+   "muscles": {
+    "primary": [
+     "rear_delts"
+    ],
+    "secondary": [
+     "upper_back"
+    ]
+   },
+   "mobilityTargets": [],
+   "equipment": [
+    {
+     "anyOf": [
+      "dumbbells"
+     ],
+     "optional": false
+    },
+    {
+     "anyOf": [
+      "box"
+     ],
+     "optional": false
+    }
+   ],
+   "laterality": "unilateral",
+   "instructions": {
+    "en": [
+     "Lean forward with one hand on the table, a light dumbbell in the other hand hanging down.",
+     "Raise the arm out to the side with a soft elbow until it is level with your back.",
+     "Lower slowly. Do all reps, then switch arms."
+    ],
+    "es": [
+     "Inclinate hacia adelante con una mano en la mesa, una mancuerna liviana colgando en la otra.",
+     "Elevá el brazo hacia el costado con el codo apenas flexionado hasta la altura de la espalda.",
+     "Bajá lento. Hacé todas y cambiá de brazo."
+    ]
+   },
+   "cues": {
+    "en": [
+     "Light weight, no swinging",
+     "Lead with the elbow"
+    ],
+    "es": [
+     "Peso liviano, sin balanceo",
+     "Guiá con el codo"
+    ]
+   },
+   "videos": [
+    {
+     "youtubeId": "E3jRXZNsIx4",
+     "startSec": 0,
+     "source": "found",
+     "url": "https://www.youtube.com/watch?v=E3jRXZNsIx4",
+     "title": "Single Arm Dumbbell Reverse Fly",
+     "channel": "Lifetime Lean",
+     "verified": "2026-11-23",
+     "vetted": "2026-11-23"
+    }
+   ],
+   "review": {
+    "confidence": "medium",
+    "flags": [
+     "Home alternative"
+    ],
+    "authored": "Home alternative written by Claude, pending review"
+   },
+   "homeAlternative": true
+  },
+  {
+   "id": "plank_shoulder_taps",
+   "sourceName": "(home alternative) Plancha con toques de hombro",
+   "name": {
+    "en": "Plank shoulder taps",
+    "es": "Plancha con toques de hombro"
+   },
+   "category": "strength",
+   "region": "core",
+   "muscles": {
+    "primary": [
+     "abs",
+     "obliques"
+    ],
+    "secondary": [
+     "front_delts"
+    ]
+   },
+   "mobilityTargets": [],
+   "equipment": [
+    {
+     "anyOf": [
+      "mat"
+     ],
+     "optional": false
+    }
+   ],
+   "laterality": "alternating",
+   "instructions": {
+    "en": [
+     "Get into a high plank, hands under shoulders, feet a bit wider than hips.",
+     "Lift one hand and tap the opposite shoulder.",
+     "Put it down and switch hands.",
+     "Keep your hips from rocking side to side."
+    ],
+    "es": [
+     "Plancha alta, manos bajo los hombros, pies un poco más anchos que la cadera.",
+     "Levantá una mano y tocá el hombro contrario.",
+     "Apoyala y cambiá de mano.",
+     "Que la cadera no se balancee."
+    ]
+   },
+   "cues": {
+    "en": [
+     "Slow taps, hips still",
+     "Squeeze glutes"
+    ],
+    "es": [
+     "Toques lentos, cadera quieta",
+     "Apretá glúteos"
+    ]
+   },
+   "videos": [
+    {
+     "youtubeId": "QOCn3_iOAro",
+     "startSec": 0,
+     "source": "found",
+     "url": "https://www.youtube.com/watch?v=QOCn3_iOAro",
+     "title": "Plank with shoulder taps",
+     "channel": "Northeastern",
+     "verified": "2026-11-23",
+     "vetted": "2026-11-23"
+    }
+   ],
+   "review": {
+    "confidence": "medium",
+    "flags": [
+     "Home alternative"
+    ],
+    "authored": "Home alternative written by Claude, pending review"
+   },
+   "homeAlternative": true
+  },
+  {
+   "id": "half_kneeling_db_chop",
+   "sourceName": "(home alternative) Leñador con mancuerna en media rodilla",
+   "name": {
+    "en": "Half-kneeling dumbbell chop",
+    "es": "Leñador con mancuerna en media rodilla"
+   },
+   "category": "strength",
+   "region": "core",
+   "muscles": {
+    "primary": [
+     "obliques"
+    ],
+    "secondary": [
+     "abs",
+     "front_delts"
+    ]
+   },
+   "mobilityTargets": [],
+   "equipment": [
+    {
+     "anyOf": [
+      "dumbbells"
+     ],
+     "optional": false
+    },
+    {
+     "anyOf": [
+      "mat"
+     ],
+     "optional": false
+    }
+   ],
+   "laterality": "unilateral",
+   "instructions": {
+    "en": [
+     "Kneel on one knee, holding one dumbbell with both hands by the hip of the down knee.",
+     "Rotate and lift the dumbbell diagonally across your body to above the opposite shoulder.",
+     "Return slowly. Do all reps, then switch sides."
+    ],
+    "es": [
+     "En media rodilla, sostené una mancuerna con las dos manos junto a la cadera de la rodilla apoyada.",
+     "Girá y llevá la mancuerna en diagonal por delante del cuerpo hasta arriba del hombro contrario.",
+     "Volvé lento. Hacé todas y cambiá de lado."
+    ]
+   },
+   "cues": {
+    "en": [
+     "Rotate through the upper back",
+     "Hips face forward"
+    ],
+    "es": [
+     "Girá desde la espalda alta",
+     "Cadera mirando al frente"
+    ]
+   },
+   "videos": [
+    {
+     "youtubeId": "zNEogdNVkx4",
+     "startSec": 0,
+     "source": "found",
+     "url": "https://www.youtube.com/watch?v=zNEogdNVkx4",
+     "title": "Half Kneeling Dumbbell Chop and Lift",
+     "channel": "Functional Bodybuilding",
+     "verified": "2026-11-23",
+     "vetted": "2026-11-23"
+    }
+   ],
+   "review": {
+    "confidence": "medium",
+    "flags": [
+     "Home alternative"
+    ],
+    "authored": "Home alternative written by Claude, pending review"
+   },
+   "homeAlternative": true
+  },
+  {
+   "id": "wall_sit_plate",
+   "sourceName": "(home alternative) Sentadilla isométrica en la pared con disco",
+   "name": {
+    "en": "Wall sit, plate held forward",
+    "es": "Sentadilla isométrica en la pared con disco"
+   },
+   "category": "strength",
+   "region": "lower_quad",
+   "muscles": {
+    "primary": [
+     "quads"
+    ],
+    "secondary": [
+     "glutes"
+    ]
+   },
+   "mobilityTargets": [],
+   "equipment": [
+    {
+     "anyOf": [
+      "plate"
+     ],
+     "optional": false
+    }
+   ],
+   "laterality": "bilateral",
+   "instructions": {
+    "en": [
+     "Lean your back against a wall and slide down until your knees are near 90 degrees.",
+     "Hold a plate with straight arms in front of you.",
+     "Stay for the time or reps set, breathing steadily."
+    ],
+    "es": [
+     "Apoyá la espalda en la pared y bajá hasta que las rodillas estén cerca de 90 grados.",
+     "Sostené un disco con los brazos estirados al frente.",
+     "Mantené el tiempo o las repeticiones indicadas, respirando."
+    ]
+   },
+   "cues": {
+    "en": [
+     "Weight in the heels",
+     "Back flat on the wall"
+    ],
+    "es": [
+     "Peso en los talones",
+     "Espalda pegada a la pared"
+    ]
+   },
+   "videos": [
+    {
+     "youtubeId": "XsbxqfsLGtY",
+     "startSec": 0,
+     "source": "found",
+     "url": "https://www.youtube.com/watch?v=XsbxqfsLGtY",
+     "title": "Wall sit with plate hold",
+     "channel": "agkin",
+     "verified": "2026-11-23",
+     "vetted": "2026-11-23"
+    }
+   ],
+   "review": {
+    "confidence": "medium",
+    "flags": [
+     "Home alternative"
+    ],
+    "authored": "Home alternative written by Claude, pending review"
+   },
+   "homeAlternative": true
+  },
+  {
+   "id": "sl_glute_bridge_floor",
+   "sourceName": "(home alternative) Puente de glúteo a una pierna",
+   "name": {
+    "en": "Single-leg glute bridge",
+    "es": "Puente de glúteo a una pierna"
+   },
+   "category": "strength",
+   "region": "lower_hinge",
+   "muscles": {
+    "primary": [
+     "glutes",
+     "hamstrings"
+    ],
+    "secondary": []
+   },
+   "mobilityTargets": [],
+   "equipment": [
+    {
+     "anyOf": [
+      "mat"
+     ],
+     "optional": false
+    }
+   ],
+   "laterality": "unilateral",
+   "instructions": {
+    "en": [
+     "Lie on your back, one foot flat on the floor near your glutes, the other leg straight up or held to the chest.",
+     "Push through the heel to lift your hips.",
+     "Squeeze at the top for 2 seconds and lower slowly.",
+     "Start with the left leg."
+    ],
+    "es": [
+     "Boca arriba, un pie apoyado cerca de los glúteos, la otra pierna estirada o tomada contra el pecho.",
+     "Empujá con el talón para elevar la cadera.",
+     "Apretá 2 segundos arriba y bajá lento.",
+     "Empezá con la izquierda."
+    ]
+   },
+   "cues": {
+    "en": [
+     "Push through the heel",
+     "Hips level"
+    ],
+    "es": [
+     "Empujá con el talón",
+     "Cadera nivelada"
+    ]
+   },
+   "videos": [
+    {
+     "youtubeId": "vdmlNaXSjd4",
+     "startSec": 0,
+     "source": "found",
+     "url": "https://www.youtube.com/watch?v=vdmlNaXSjd4",
+     "title": "Single Leg Glute Bridge",
+     "channel": "Middlebury College",
+     "verified": "2026-11-23",
+     "vetted": "2026-11-23"
+    }
+   ],
+   "review": {
+    "confidence": "medium",
+    "flags": [
+     "Home alternative"
+    ],
+    "authored": "Home alternative written by Claude, pending review"
+   },
+   "homeAlternative": true
+  },
+  {
+   "id": "split_squat_mini_band",
+   "sourceName": "(home alternative) Estocada fija con mini banda en las rodillas",
+   "name": {
+    "en": "Split squat with mini band at the knees",
+    "es": "Estocada fija con mini banda en las rodillas"
+   },
+   "category": "strength",
+   "region": "lower_quad",
+   "muscles": {
+    "primary": [
+     "quads",
+     "glutes"
+    ],
+    "secondary": [
+     "glute_med",
+     "adductors"
+    ]
+   },
+   "mobilityTargets": [],
+   "equipment": [
+    {
+     "anyOf": [
+      "mini_band"
+     ],
+     "optional": false
+    }
+   ],
+   "laterality": "unilateral",
+   "instructions": {
+    "en": [
+     "Put a mini band above both knees and step into a split stance.",
+     "The band pulls the front knee inward: keep it pushed out over the toes.",
+     "Lower until the back knee nearly touches the floor, then drive up.",
+     "Do all reps, then switch legs. Start with the left."
+    ],
+    "es": [
+     "Poné una mini banda por encima de las dos rodillas y abrí las piernas en estocada.",
+     "La banda tira la rodilla de adelante hacia adentro: mantenela empujando hacia afuera, alineada con el pie.",
+     "Bajá hasta casi tocar el piso con la rodilla de atrás y subí.",
+     "Hacé todas y cambiá de pierna. Empezá con la izquierda."
+    ]
+   },
+   "cues": {
+    "en": [
+     "Front knee out against the band",
+     "Torso tall"
+    ],
+    "es": [
+     "Rodilla de adelante hacia afuera contra la banda",
+     "Torso erguido"
+    ]
+   },
+   "videos": [
+    {
+     "youtubeId": "WiRKrXZsV-s",
+     "startSec": 0,
+     "source": "found",
+     "url": "https://www.youtube.com/watch?v=WiRKrXZsV-s",
+     "title": "Knee Banded Split Squat",
+     "channel": "OPEX Fitness",
+     "verified": "2026-11-23",
+     "vetted": "2026-11-23"
+    }
+   ],
+   "review": {
+    "confidence": "medium",
+    "flags": [
+     "Home alternative"
+    ],
+    "authored": "Home alternative written by Claude, pending review"
+   },
+   "homeAlternative": true
+  },
+  {
+   "id": "adductor_squeeze_mat",
+   "sourceName": "(home alternative) Aductores apretando la colchoneta enrollada, 3 posiciones",
+   "name": {
+    "en": "Adductor squeeze with rolled mat, 3 positions",
+    "es": "Aductores apretando la colchoneta enrollada, 3 posiciones"
+   },
+   "category": "strength",
+   "region": "lower_hinge",
+   "muscles": {
+    "primary": [
+     "adductors"
+    ],
+    "secondary": []
+   },
+   "mobilityTargets": [],
+   "equipment": [
+    {
+     "anyOf": [
+      "mat"
+     ],
+     "optional": false
+    }
+   ],
+   "laterality": "bilateral",
+   "instructions": {
+    "en": [
+     "Roll up the mat tightly.",
+     "Lie on your back and squeeze the roll between your knees as hard as you can for the time set.",
+     "Do it with legs straight, knees bent at 45 degrees, and knees and hips at 90 degrees."
+    ],
+    "es": [
+     "Enrollá bien la colchoneta.",
+     "Boca arriba, apretá el rollo entre las rodillas lo más fuerte que puedas el tiempo indicado.",
+     "Hacelo con piernas estiradas, rodillas a 45 grados y rodillas y cadera a 90 grados."
+    ]
+   },
+   "cues": {
+    "en": [
+     "Steady squeeze, keep breathing"
+    ],
+    "es": [
+     "Apretá parejo, seguí respirando"
+    ]
+   },
+   "videos": [
+    {
+     "youtubeId": "vF4Q-pQUQRo",
+     "startSec": 0,
+     "source": "found",
+     "url": "https://www.youtube.com/watch?v=vF4Q-pQUQRo",
+     "title": "Hip Adduction Supine Ball Squeeze",
+     "channel": "Hope Physical Therapy",
+     "verified": "2026-11-23",
+     "vetted": "2026-11-23"
+    }
+   ],
+   "review": {
+    "confidence": "medium",
+    "flags": [
+     "Home alternative"
+    ],
+    "authored": "Home alternative written by Claude, pending review"
+   },
+   "homeAlternative": true
+  },
+  {
+   "id": "db_split_squat_deficit",
+   "sourceName": "(home alternative) Estocada fija con déficit, pie de adelante sobre disco",
+   "name": {
+    "en": "Dumbbell split squat, front foot on plate",
+    "es": "Estocada fija con déficit, pie de adelante sobre disco"
+   },
+   "category": "strength",
+   "region": "lower_quad",
+   "muscles": {
+    "primary": [
+     "quads",
+     "glutes"
+    ],
+    "secondary": [
+     "adductors"
+    ]
+   },
+   "mobilityTargets": [],
+   "equipment": [
+    {
+     "anyOf": [
+      "dumbbells"
+     ],
+     "optional": false
+    },
+    {
+     "anyOf": [
+      "plate"
+     ],
+     "optional": false
+    }
+   ],
+   "laterality": "unilateral",
+   "instructions": {
+    "en": [
+     "Stand in a split stance with the front foot on a weight plate, a dumbbell in each hand.",
+     "Lower until the back knee nearly touches the floor.",
+     "Drive up through the front heel.",
+     "Do all reps, then switch legs. Start with the left."
+    ],
+    "es": [
+     "En estocada con el pie de adelante sobre un disco, una mancuerna en cada mano.",
+     "Bajá hasta que la rodilla de atrás casi toque el piso.",
+     "Subí empujando con el talón de adelante.",
+     "Hacé todas y cambiá de pierna. Empezá con la izquierda."
+    ]
+   },
+   "cues": {
+    "en": [
+     "Deep and slow",
+     "Front knee tracks over the toes"
+    ],
+    "es": [
+     "Profundo y lento",
+     "Rodilla de adelante alineada con el pie"
+    ]
+   },
+   "videos": [
+    {
+     "youtubeId": "ZCk7Bco2uk8",
+     "startSec": 0,
+     "source": "found",
+     "url": "https://www.youtube.com/watch?v=ZCk7Bco2uk8",
+     "title": "DB Deficit Split Squat",
+     "channel": "Functional AF",
+     "verified": "2026-11-23",
+     "vetted": "2026-11-23"
+    }
+   ],
+   "review": {
+    "confidence": "medium",
+    "flags": [
+     "Home alternative"
+    ],
+    "authored": "Home alternative written by Claude, pending review"
+   },
+   "homeAlternative": true
   }
  ]
 }

@@ -2,6 +2,17 @@
 // Keys are versioned so a future schema change can migrate cleanly.
 const KEY = 'trainingApp.v1';
 
+export const DEFAULT_EQUIPMENT = [
+  { id: 'eq1', type: 'dumbbells', note: '2× 3 kg, 2× 5 kg, 2× 10 kg' },
+  { id: 'eq2', type: 'barbell', note: 'Olympic bar, 7.5 kg' },
+  { id: 'eq3', type: 'plate', note: '2× 2.5 kg' },
+  { id: 'eq4', type: 'mini_band', note: 'Full set' },
+  { id: 'eq5', type: 'pull_up_bar', note: '' },
+  { id: 'eq6', type: 'box', note: 'Wooden table, used as a plyo box' },
+  { id: 'eq7', type: 'treadmill', note: 'Walking treadmill, max 6 km/h' },
+  { id: 'eq8', type: 'mat', note: '' },
+];
+
 const DEFAULTS = {
   settings: {
     lang: 'en',
@@ -11,7 +22,9 @@ const DEFAULTS = {
     weightStep: 1,
     sound: true,
     week: 1,
+    location: 'home',  // 'home' uses your equipment and swaps exercises; 'gym' runs the plan as written
   },
+  equipment: null,   // filled with DEFAULT_EQUIPMENT on first run
   sessions: [],      // finished workouts
   active: null,      // workout in progress (for resume)
   notes: {},         // exerciseId -> text
@@ -19,6 +32,7 @@ const DEFAULTS = {
 };
 
 let state = load();
+if (!Array.isArray(state.equipment)) { state.equipment = structuredClone(DEFAULT_EQUIPMENT); }
 
 function load() {
   try {
@@ -55,9 +69,17 @@ export const store = {
     const obj = JSON.parse(text);
     if (!obj || obj.app !== 'training' || !obj.data || !Array.isArray(obj.data.sessions)) throw new Error('bad');
     state = { ...structuredClone(DEFAULTS), ...obj.data, settings: { ...DEFAULTS.settings, ...obj.data.settings } };
+    if (!Array.isArray(state.equipment)) state.equipment = structuredClone(DEFAULT_EQUIPMENT);
     save();
   },
-  reset() { state = structuredClone(DEFAULTS); save(); },
+  reset() { state = structuredClone(DEFAULTS); state.equipment = structuredClone(DEFAULT_EQUIPMENT); save(); },
+  equipment() { return state.equipment; },
+  saveEquipment(item) {
+    if (item.id) { const i = state.equipment.findIndex(e => e.id === item.id); if (i >= 0) state.equipment[i] = item; }
+    else state.equipment.push({ ...item, id: 'eq' + Date.now() });
+    save();
+  },
+  deleteEquipment(id) { state.equipment = state.equipment.filter(e => e.id !== id); save(); },
 };
 
 // Ask the browser not to evict our storage (helps on iOS when installed).

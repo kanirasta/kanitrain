@@ -172,8 +172,8 @@
       "es": "Disco"
     },
     "box": {
-      "en": "Box / step",
-      "es": "Cajón"
+      "en": "Box / step / sturdy table",
+      "es": "Cajón / escalón / mesa firme"
     },
     "resistance_band": {
       "en": "Long resistance band",
@@ -230,6 +230,10 @@
     "none": {
       "en": "None",
       "es": "Ninguno"
+    },
+    "pull_up_bar": {
+      "en": "Pull-up bar",
+      "es": "Barra de dominadas"
     }
   }
 }

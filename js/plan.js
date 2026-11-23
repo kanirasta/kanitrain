@@ -31,6 +31,49 @@ export function isLowerUnilateral(ex) {
     ex.muscles.primary.some(m => ['calves', 'hamstrings', 'glutes', 'quads'].includes(m)));
 }
 
+// ---------- Equipment and home swaps ----------
+export function ownedTypes() { return new Set(['none', ...(store.s.equipment || []).map(e => e.type)]); }
+export function missingFor(ex, owned = ownedTypes()) {
+  return ex.equipment.filter(g => !g.optional && !g.anyOf.some(q => owned.has(q))).map(g => g.anyOf);
+}
+// Which exercise to do for a plan item at this location.
+export function resolveItem(item, location = store.settings().location, owned = ownedTypes()) {
+  const ex = data.ex[item.exerciseId];
+  if (location === 'gym' || !missingFor(ex, owned).length) return { exId: ex.id, swap: null, missing: [] };
+  for (const alt of ex.alternatives || []) {
+    const a = data.ex[alt.exerciseId];
+    if (a && !missingFor(a, owned).length) return { exId: a.id, swap: { from: ex.id, fit: alt.fit, note: alt.note }, missing: [] };
+  }
+  return { exId: ex.id, swap: null, missing: missingFor(ex, owned) };
+}
+// Summary of a day at home: swaps, things you can't do, and whether the gym is the better choice.
+export function homeReport(day, owned = ownedTypes()) {
+  const swaps = [], missing = [];
+  for (const b of day.blocks) for (const item of b.items) {
+    const r = resolveItem(item, 'home', owned);
+    if (r.swap) swaps.push({ ...r.swap, to: r.exId, block: b.id });
+    if (r.missing.length) missing.push({ exId: r.exId, needs: r.missing, block: b.id });
+  }
+  const partial = swaps.filter(s => s.fit === 'partial');
+  return { swaps, missing, partial, gymBetter: missing.length > 0 || partial.length > 0 };
+}
+// Equipment needed for a day: [{label groups, owned}] for the exercises actually done there.
+export function equipmentNeeded(day, location = store.settings().location, owned = ownedTypes()) {
+  const seen = new Map();
+  for (const b of day.blocks) for (const item of b.items) {
+    const ex = data.ex[resolveItem(item, location, owned).exId];
+    for (const g of ex.equipment) {
+      const types = g.anyOf.filter(q => q !== 'none');
+      if (!types.length) continue;
+      const key = types.join('/');
+      if (!seen.has(key)) seen.set(key, { types, owned: types.some(q => owned.has(q)), optional: g.optional });
+    }
+  }
+  // Drop a group when a narrower group already covers it (for example "box or bench" when "box" is listed).
+  const list = [...seen.values()];
+  return list.filter(g => !list.some(o => o !== g && o.types.length < g.types.length && o.types.every(q => g.types.includes(q))));
+}
+
 // ---------- Steps ----------
 // A step is one tap of "Done": one set, or one side of a set for unilateral strength work.
 function shouldSplit(item, ex, blockType) {
@@ -53,14 +96,16 @@ function sideSeq(item) {
   return out;
 }
 
-export function buildSteps(day) {
+export function buildSteps(day, location = store.settings().location) {
   const st = store.settings();
+  const owned = ownedTypes();
   const steps = [];
   for (const block of day.blocks) {
     const bt = block.type;
     const isCircuit = bt === 'circuit';
     const perItem = block.items.map((item, ii) => {
-      const ex = data.ex[item.exerciseId];
+      const res = resolveItem(item, location, owned);
+      const ex = data.ex[res.exId];
       const split = shouldSplit(item, ex, bt);
       const list = [];
       if (split) {
@@ -75,7 +120,7 @@ export function buildSteps(day) {
         ...x,
         key: `${block.id}:${ii}:${x.side || 'b'}:${x.setNo}`,
         blockId: block.id, blockType: bt, blockName: block.name, itemIdx: ii,
-        exId: item.exerciseId, durationSec: item.durationSec || null, per: item.per || null,
+        exId: res.exId, swapFrom: res.swap ? res.swap.from : null, durationSec: item.durationSec || null, per: item.per || null,
         note: item.note || null, weighted: isWeighted(ex),
       }));
     });
@@ -123,7 +168,7 @@ export function estimateMinutes(day) {
 
 export function exerciseIdsOf(day) {
   const ids = [];
-  for (const b of day.blocks) for (const i of b.items) if (!ids.includes(i.exerciseId)) ids.push(i.exerciseId);
+  for (const b of day.blocks) for (const i of b.items) { const id = resolveItem(i).exId; if (!ids.includes(id)) ids.push(id); }
   return ids;
 }
 

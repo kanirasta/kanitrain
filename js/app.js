@@ -3,12 +3,12 @@ import { store, requestPersistence } from './store.js';
 import {
   data, loadData, allDays, dayById, weekCount, buildSteps, estimateMinutes, exerciseIdsOf, exerciseHistory,
   lastValuesFor, muscleLastTrained, daysSince, freshness, topMuscles, weekDays, doneInCurrentCycle,
-  suggestedDay, isLowerUnilateral, lastSessionFor,
+  suggestedDay, isLowerUnilateral, lastSessionFor, resolveItem, homeReport, equipmentNeeded,
 } from './plan.js';
 import { mountVideo } from './video.js';
 import { unlockAudio, sound, buzz, keepAwake, isStandalone, isIOS } from './device.js';
 
-export const BUILD = '2026-11-23j';
+export const BUILD = '2026-11-24a';
 const $app = document.getElementById('app');
 const $sheet = document.getElementById('sheet');
 
@@ -52,11 +52,6 @@ function presc(item) {
   return `${item.sets} × ${item.reps}${per}`;
 }
 
-function equipmentFor(day) {
-  return day.equipment
-    .map(e => e.split('/').filter(q => q !== 'none').map(equipName).join(` ${getLang() === 'es' ? 'o' : 'or'} `))
-    .filter(Boolean);
-}
 
 function showToast(msg) {
   ui.toast = msg;
@@ -106,14 +101,26 @@ function renderHome() {
     </div>` : '';
 
   const muscles = topMuscles(day, 6).map(m => `<span class="chip">${esc(muscleName(m))}<small>${rel(lastMap[m])}</small></span>`).join('');
-  const equip = equipmentFor(day).map(e => `<li>${esc(e)}</li>`).join('');
+  const loc = store.settings().location;
+  const orWord = ` ${getLang() === 'es' ? 'o' : 'or'} `;
+  const equip = equipmentNeeded(day).map(g => `<li class="${loc === 'home' ? (g.owned ? 'have' : 'need') : ''}">${esc(g.types.map(equipName).join(orWord))}${g.optional ? ` <small>(${t('optional')})</small>` : ''}</li>`).join('');
+  const report = loc === 'home' ? homeReport(day) : null;
+  const locSeg = `<div class="seg loc">${[['home', t('atHome')], ['gym', t('atGym')]].map(([v, l]) => `<button class="${loc === v ? 'on' : ''}" data-a="set" data-k="location" data-v="${v}">${l}</button>`).join('')}</div>`;
+  const gymCard = report && report.gymBetter ? `<div class="card gym-hint"><b>${t('betterAtGym')}</b>
+      <ul class="plain">${report.missing.map(m => `<li>${esc(L(data.ex[m.exId].name))}: ${t('needs')} ${esc(m.needs.map(g => g.map(equipName).join(orWord)).join(', '))}</li>`).join('')}
+      ${report.partial.map(sw => `<li>${esc(L(data.ex[sw.from].name))} → ${esc(L(data.ex[sw.to].name))}: ${esc(L(sw.note))}</li>`).join('')}</ul>
+      <button class="btn ghost small" data-a="set" data-k="location" data-v="gym">${t('switchToGym')}</button></div>` : '';
+  const swapLine = report && report.swaps.length && !report.gymBetter ? `<p class="muted small home-ok">${t('homeSwaps', { n: report.swaps.length })}</p>` : '';
 
   const blocks = day.blocks.map(b => {
     const title = b.type === 'warmup' ? t('block_warmup') : L(b.name);
     const rows = b.items.map((item, ii) => {
-      const ex = data.ex[item.exerciseId];
+      const r = resolveItem(item);
+      const ex = data.ex[r.exId];
+      const sub = r.swap ? `<small class="swap ${r.swap.fit}">${t('insteadOf', { name: L(data.ex[r.swap.from].name) })}</small>`
+        : r.missing.length ? `<small class="swap missing">${t('needs')} ${esc(r.missing.map(g => g.map(equipName).join(orWord)).join(', '))}</small>` : '';
       return `<button class="ex-row" data-a="ex" data-ex="${ex.id}" data-block="${b.id}" data-item="${ii}">
-        <span class="ex-name">${esc(L(ex.name))}${ex.videos.length ? ICON.play : ''}</span>
+        <span class="ex-name">${esc(L(ex.name))}${ex.videos.length ? ICON.play : ''}${sub}</span>
         <span class="ex-presc">${esc(presc(item))}</span>
       </button>`;
     }).join('');
@@ -130,6 +137,7 @@ function renderHome() {
       <button class="btn ghost small" data-a="days">${t('changeDay')}</button>
     </header>
     ${install}${resume}
+    ${locSeg}${gymCard}${swapLine}
     <section class="card"><h2>${t('muscles')}</h2><div class="chips">${muscles}</div></section>
     <section class="card"><h2>${t('equipment')}</h2><ul class="equip">${equip}</ul></section>
     <section class="card plan">${blocks}</section>
@@ -184,9 +192,11 @@ function renderExSheet({ exId, blockId, itemIdx, dayId }) {
       <a class="link" href="https://www.youtube.com/watch?v=${esc(v.youtubeId)}${v.startSec ? '&t=' + v.startSec + 's' : ''}" target="_blank" rel="noopener">${t('openYoutube')}</a>
     </div>` : `<p class="muted">${t('noVideo')}</p>`;
   const leftFirst = isLowerUnilateral(ex) ? `<p class="badge-left">${t('leftFirst')}</p>` : '';
+  const res = item ? resolveItem(item) : null;
+  const swapNote = res && res.swap ? `<p class="swap-note"><b>${t('homeSwap')}</b> ${t('insteadOf', { name: L(data.ex[res.swap.from].name) })}. ${esc(L(res.swap.note))}</p>` : '';
   return `<h2 class="sheet-title">${esc(L(ex.name))}</h2>
     ${item ? `<p class="presc-line">${t('prescription')}: <b>${esc(presc(item))}</b>${item.note ? ` · ${esc(item.note)}` : ''}</p>` : ''}
-    ${leftFirst}
+    ${swapNote}${leftFirst}
     ${video}
     <div class="chips">${prim}${sec}${mob}</div>
     ${equip ? `<p class="muted">${t('equipment')}: ${esc(equip)}</p>` : ''}
@@ -206,7 +216,7 @@ function renderDaysSheet() {
     const done = doneInCurrentCycle(d.id);
     const chips = topMuscles(d, 4).map(m => `<span class="chip">${esc(muscleName(m))}<small>${rel(lastMap[m])}</small></span>`).join('');
     return `<button class="day-row ${d.id === ui.dayId ? 'on' : ''}" data-a="pickday" data-day="${d.id}">
-      <div class="day-head"><b>${esc(dayTitle(d))}</b>${done ? `<span class="done-badge">${ICON.check}</span>` : ''}<span class="fresh" style="--f:${f}%">${t('freshness', { pct: f })}</span></div>
+      <div class="day-head"><b>${esc(dayTitle(d))}</b>${done ? `<span class="done-badge">${ICON.check}</span>` : ''}${store.settings().location === 'home' && homeReport(d).gymBetter ? `<span class="gym-badge">${t('gymBadge')}</span>` : ''}<span class="fresh" style="--f:${f}%">${t('freshness', { pct: f })}</span></div>
       <div class="chips">${chips}</div></button>`;
   };
   const sortF = arr => arr.map(d => [d, freshness(d, lastMap) - (doneInCurrentCycle(d.id) ? 1 : 0)]).sort((a, b) => b[1] - a[1]).map(x => x[0]);
@@ -218,15 +228,16 @@ function renderDaysSheet() {
 
 // ---------- workout engine ----------
 let steps = [], stepMap = {};
-function loadSteps(dayId) { steps = buildSteps(dayById(dayId)); stepMap = Object.fromEntries(steps.map(s => [s.key, s])); }
+function loadSteps(dayId, location) { steps = buildSteps(dayById(dayId), location); stepMap = Object.fromEntries(steps.map(s => [s.key, s])); }
 
 function startWorkout() {
   unlockAudio();
   const day = dayById(ui.dayId);
-  loadSteps(day.id);
+  const location = store.settings().location;
+  loadSteps(day.id, location);
   store.setActive({
     id: 's' + Date.now(), dayId: day.id, start: new Date().toISOString(),
-    order: steps.map(s => s.key), pos: 0, done: {}, phase: 'work', restEnd: null, restTotal: 0,
+    location, order: steps.map(s => s.key), pos: 0, done: {}, phase: 'work', restEnd: null, restTotal: 0,
     timer: null,
   });
   ui.draft = null;
@@ -239,7 +250,7 @@ function startWorkout() {
 function resumeWorkout() {
   unlockAudio();
   const a = store.s.active;
-  loadSteps(a.dayId);
+  loadSteps(a.dayId, a.location || 'gym');
   a.order = a.order.filter(k => stepMap[k]);
   ui.screen = 'workout';
   keepAwake(true);
@@ -443,7 +454,7 @@ function renderWorkout() {
 
   return `<main class="workout">${top}
     <div class="wo-body">
-      <p class="eyebrow">${esc(blockTitle)}${step.round ? ` · ${t('roundOf', { n: step.round, total: step.rounds })}` : ''}</p>
+      <p class="eyebrow">${esc(blockTitle)}${step.round ? ` · ${t('roundOf', { n: step.round, total: step.rounds })}` : ''}${step.swapFrom ? ` · ${t('homeSwap')}` : ''}</p>
       <button class="wo-name" data-a="ex" data-ex="${ex.id}" data-block="${step.blockId}" data-item="${step.itemIdx}">
         ${esc(L(ex.name))} <span class="info">${ICON.info}</span></button>
       <div class="set-line">${sideBadge}<span>${t('setOf', { n: step.setNo, total: step.totalSets })}</span><span class="dots">${dots}</span></div>
@@ -557,6 +568,7 @@ function renderSettings() {
     <section class="card"><h2>${t('weightStep')}</h2>${seg('weightStep', [[0.5, '0.5 kg'], [1, '1 kg'], [2, '2 kg'], [2.5, '2.5 kg']])}</section>
     <section class="card"><h2>${t('sound')}</h2>${seg('sound', [[true, t('on')], [false, t('off')]])}
       <button class="btn ghost small" data-a="test-sound">${t('soundTest')}</button><p class="muted small">${t('soundHint')}</p></section>
+    ${renderEquipmentCard()}
     <section class="card"><h2>${t('data')}</h2>
       <p class="muted small">${store.s.lastBackupAt ? t('lastBackup', { when: rel(store.s.lastBackupAt) }) : t('noBackup')}</p>
       <div class="row"><button class="btn primary" data-a="export">${t('exportData')}</button>
@@ -564,6 +576,23 @@ function renderSettings() {
       <button class="btn danger small" data-a="reset">${t('reset')}</button></section>
     <p class="muted tiny center">${t('version')} ${BUILD}</p>
   </main>`;
+}
+
+function renderEquipmentCard() {
+  const list = store.equipment();
+  const ed = ui.eqEdit;
+  const types = Object.keys(data.tax.equipment).filter(k => k !== 'none' && !k.includes('/'));
+  const form = item => `<div class="eq-form">
+      <select data-eqtype>${types.map(k => `<option value="${k}" ${item.type === k ? 'selected' : ''}>${esc(equipName(k))}</option>`).join('')}</select>
+      <input data-eqnote type="text" placeholder="${t('eqNotePh')}" value="${esc(item.note || '')}">
+      <div class="row"><button class="btn ghost small" data-a="eq-cancel">${t('cancel')}</button><button class="btn primary small" data-a="eq-save" data-id="${item.id || ''}">${t('saveShort')}</button></div>
+    </div>`;
+  const rows = list.map(e => ed && ed.id === e.id ? form(e) : `<div class="eq-row"><div><b>${esc(equipName(e.type))}</b>${e.note ? `<small>${esc(e.note)}</small>` : ''}</div>
+      <button class="btn ghost small" data-a="eq-edit" data-id="${e.id}">${t('edit')}</button>
+      <button class="btn ghost small" data-a="eq-del" data-id="${e.id}" aria-label="${t('delete')}">${ICON.x}</button></div>`).join('');
+  return `<section class="card"><h2>${t('myEquipment')}</h2><p class="muted small">${t('myEquipmentHint')}</p>
+    <div class="eq-list">${rows || `<p class="muted">${t('noEquipment')}</p>`}</div>
+    ${ed && !ed.id ? form({ type: types[0], note: '' }) : `<button class="btn ghost small" data-a="eq-add">+ ${t('addEquipment')}</button>`}</section>`;
 }
 
 // ---------- actions ----------
@@ -615,6 +644,20 @@ document.addEventListener('click', async e => {
     case 'jump': jumpTo(el.dataset.key); return;
     case 'finish': if (confirm(t('finishConfirm'))) { ui.sheet = null; finishWorkout(); } return;
     case 'open-sess': ui.summaryId = el.dataset.id; ui.screen = 'summary'; window.scrollTo(0, 0); break;
+    case 'eq-add': ui.eqEdit = { id: null }; break;
+    case 'eq-edit': ui.eqEdit = { id: el.dataset.id }; break;
+    case 'eq-cancel': ui.eqEdit = null; break;
+    case 'eq-save': {
+      const box = el.closest('.eq-form');
+      const item = { type: box.querySelector('[data-eqtype]').value, note: box.querySelector('[data-eqnote]').value.trim() };
+      if (el.dataset.id) item.id = el.dataset.id;
+      store.saveEquipment(item); ui.eqEdit = null; break;
+    }
+    case 'eq-del': {
+      const e = store.equipment().find(x => x.id === el.dataset.id);
+      if (e && confirm(t('deleteConfirm', { name: equipName(e.type) }))) store.deleteEquipment(e.id);
+      break;
+    }
     case 'set': {
       const k = el.dataset.k; let v = el.dataset.v;
       if (['restStrength', 'restCircuit', 'restSides', 'week', 'weightStep'].includes(k)) v = +v;

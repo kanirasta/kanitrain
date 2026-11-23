@@ -347,6 +347,76 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     assert(navs === 1, `page reloaded ${navs - 1} time(s) on first visit`);
   });
 
+  // ---------- equipment and home swaps ----------
+  const goHomeDay = async id => { await tap('[data-a=go][data-to=home]'); await tap('[data-a=days]'); await tap(`.day-row[data-day=${id}]`); await sleep(100); };
+  await test('equipment: defaults are your home list', async () => {
+    const eq = await p.evaluate(() => window.__app.store.s.equipment.map(e => e.type));
+    for (const k of ['dumbbells', 'barbell', 'plate', 'mini_band', 'pull_up_bar', 'box', 'treadmill', 'mat']) assert(eq.includes(k), 'missing ' + k);
+  });
+  await test('home: back squat is swapped and the day is flagged for the gym', async () => {
+    await tap('[data-a=go][data-to=settings]');
+    await p.evaluate(() => { window.__app.store.reset(); });
+    await goHomeDay('w1-mon');
+    assert(await exists('.seg.loc button.on[data-v=home]'), 'not at home');
+    assert(await exists('.ex-row[data-ex=goblet_squat_tempo]'), 'back squat not swapped');
+    assert(!(await exists('.ex-row[data-ex=back_squat]')), 'back squat still listed');
+    assert(await exists('.card.gym-hint'), 'no gym hint');
+  });
+  await test('home: swapped exercise popup explains the swap', async () => {
+    await tap('.ex-row[data-ex=goblet_squat_tempo]'); await p.waitForSelector('#sheet .sheet');
+    assert((await p.textContent('.swap-note')).includes('Barbell back squat'), 'no swap note');
+    await tap('#sheet .close'); await sleep(100);
+  });
+  await test('gym: switching shows the plan as written', async () => {
+    await tap('.seg.loc [data-v=gym]');
+    assert(await exists('.ex-row[data-ex=back_squat]'), 'back squat not back');
+    assert(!(await exists('.card.gym-hint')), 'gym hint still shown');
+    await tap('.seg.loc [data-v=home]');
+  });
+  await test('equipment: add a bench and bench presses stop being swapped', async () => {
+    await goHomeDay('w1-fri');
+    assert(await exists('.ex-row[data-ex=db_floor_press]'), 'expected floor press at home without bench');
+    await tap('[data-a=go][data-to=settings]');
+    await tap('[data-a=eq-add]');
+    await p.selectOption('[data-eqtype]', 'flat_bench');
+    await p.fill('[data-eqnote]', 'Foldable');
+    await tap('[data-a=eq-save]');
+    assert((await p.textContent('.eq-list')).includes('Foldable'), 'bench not listed');
+    await goHomeDay('w1-fri');
+    assert(await exists('.ex-row[data-ex=db_bench_press]'), 'bench press still swapped');
+  });
+  await test('equipment: edit and delete', async () => {
+    await tap('[data-a=go][data-to=settings]');
+    const id = await p.evaluate(() => window.__app.store.s.equipment.find(e => e.type === 'flat_bench').id);
+    await tap(`[data-a=eq-edit][data-id="${id}"]`);
+    await p.fill('[data-eqnote]', 'Adjustable later');
+    await tap('[data-a=eq-save]');
+    assert((await p.textContent('.eq-list')).includes('Adjustable later'), 'edit not saved');
+    await tap(`[data-a=eq-del][data-id="${id}"]`);
+    assert(!(await p.evaluate(() => window.__app.store.s.equipment.some(e => e.type === 'flat_bench'))), 'not deleted');
+    await goHomeDay('w1-fri');
+    assert(await exists('.ex-row[data-ex=db_floor_press]'), 'swap did not come back');
+  });
+  await test('home workout: steps use the swapped exercises and survive resume', async () => {
+    await goHomeDay('w1-mon');
+    await tap('[data-a=start]'); await p.waitForSelector('.workout');
+    const ids = await p.evaluate(() => { const a = window.__app.store.s.active; return a.location; });
+    assert(ids === 'home', 'location not stored');
+    await p.reload(); await p.waitForSelector('.home'); await tap('.card.resume [data-a=resume]');
+    await tap('[data-a=steps]');
+    const txt = await p.textContent('#sheet');
+    assert(txt.includes('Goblet squat, slow tempo') && !txt.includes('Barbell back squat'), 'swap lost after resume');
+    await tap('#sheet .close'); await tap('[data-a=menu]'); await tap('#sheet [data-a=finish]'); await p.waitForSelector('.summary');
+    await tap('.start-bar [data-a=go]');
+  });
+  await test('every plan exercise has a home path or is flagged', async () => {
+    const r = await p.evaluate(async () => {
+      const m = await import('./js/plan.js');
+      return m.allDays().map(d => { const h = m.homeReport(d); return d.id + ':' + h.swaps.length + '/' + h.partial.length + '/' + h.missing.length; });
+    });
+    console.log('        home report (swaps/partial/missing):', r.join(' '));
+  });
+
   await test('no JavaScript errors during the run', async () => {
     assert(errors.length === 0, errors.join(' | '));
   });

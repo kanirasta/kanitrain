@@ -213,3 +213,24 @@ main { max-width: 640px; margin: 0 auto; padding: calc(var(--safe-t) + 16px) 16p
 .vbar { display: flex; gap: 8px; width: 100%; }
 .vbtn { flex: 1; height: 40px; border-radius: 10px; background: var(--card); border: 1px solid var(--line); display: grid; place-items: center; font-weight: 700; font-size: 15px; }
 .vbtn svg { width: 20px; height: 20px; }
+
+.seg.loc { margin-bottom: 12px; }
+.card.gym-hint { border: 2px solid var(--left); background: var(--left-soft); }
+.card.gym-hint b { color: var(--left); display: block; margin-bottom: 6px; }
+.card.gym-hint ul { margin: 0 0 10px; font-size: 14px; }
+.home-ok { margin: -4px 0 12px; }
+.ex-name small.swap { display: block; font-size: 12px; font-weight: 500; color: var(--muted); margin-top: 2px; }
+.ex-name small.swap.partial { color: var(--left); }
+.ex-name small.swap.missing { color: var(--danger); }
+.equip li.need { color: var(--danger); }
+.equip li.need::before { background: var(--danger); }
+.equip li small { color: var(--muted); }
+.swap-note { background: var(--bg); border-radius: 10px; padding: 8px 12px; font-size: 14px; margin: 8px 0; }
+.gym-badge { font-size: 11px; font-weight: 700; color: var(--left); background: var(--left-soft); padding: 3px 7px; border-radius: 8px; }
+.eq-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+.eq-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.eq-row > div { flex: 1; display: flex; flex-direction: column; }
+.eq-row small { color: var(--muted); font-size: 13px; }
+.eq-row .btn svg { width: 16px; height: 16px; }
+.eq-form { display: flex; flex-direction: column; gap: 8px; padding: 10px; background: var(--bg); border-radius: 12px; margin-bottom: 8px; }
+.eq-form select, .eq-form input { font: inherit; font-size: 16px; padding: 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); color: var(--text); }
