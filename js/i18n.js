@@ -116,6 +116,7 @@ const STRINGS = {
     mon: 'Monday', tue: 'Tuesday', wed: 'Wednesday', thu: 'Thursday', fri: 'Friday', sat: 'Saturday', sun: 'Sunday',
     block_warmup: 'Warm-up',
     hold: 'hold',
+    version: 'Version',
   },
   es: {
     appName: 'kanitrain',
@@ -233,6 +234,7 @@ const STRINGS = {
     mon: 'Lunes', tue: 'Martes', wed: 'Miércoles', thu: 'Jueves', fri: 'Viernes', sat: 'Sábado', sun: 'Domingo',
     block_warmup: 'Entrada en calor',
     hold: 'sostener',
+    version: 'Versión',
   },
 };
 

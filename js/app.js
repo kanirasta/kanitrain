@@ -7,9 +7,11 @@ import {
 } from './plan.js';
 import { unlockAudio, sound, buzz, keepAwake, isStandalone, isIOS } from './device.js';
 
+export const BUILD = '2026-11-23e';
 const $app = document.getElementById('app');
 const $sheet = document.getElementById('sheet');
 
+let goingBack = false;
 const ui = {
   screen: 'home',       // home | workout | summary | history | settings
   dayId: null,          // day shown on home
@@ -138,7 +140,13 @@ function renderHome() {
 // ---------- sheets ----------
 function renderSheet() {
   const sh = ui.sheet;
-  if (!sh) { $sheet.innerHTML = ''; $sheet.className = ''; document.body.classList.remove('locked'); return; }
+  if (!sh) {
+    $sheet.innerHTML = ''; $sheet.className = ''; delete $sheet.dataset.key; document.body.classList.remove('locked');
+    if (history.state && history.state.sheet && !goingBack) { goingBack = true; history.back(); }
+    return;
+  }
+  // A history entry per open sheet, so iOS edge-swipe back also closes it.
+  if (!(history.state && history.state.sheet) && !goingBack) history.pushState({ sheet: 1 }, '');
   let body = '';
   if (sh.type === 'ex') body = renderExSheet(sh);
   else if (sh.type === 'days') body = renderDaysSheet();
@@ -557,7 +565,7 @@ function renderSettings() {
       <div class="row"><button class="btn primary" data-a="export">${t('exportData')}</button>
       <label class="btn ghost">${t('importData')}<input type="file" accept="application/json,.json" data-import hidden></label></div>
       <button class="btn danger small" data-a="reset">${t('reset')}</button></section>
-    <p class="muted tiny center">v1 · ${esc(L(data.plan.title))}</p>
+    <p class="muted tiny center">${t('version')} ${BUILD}</p>
   </main>`;
 }
 
@@ -677,6 +685,11 @@ function beepCountdown(a, left, tag) {
   if (s >= 1 && s <= 3 && a._beep !== tag + s) { a._beep = tag + s; sound.tick(); }
 }
 
+window.addEventListener('popstate', () => { goingBack = false; if (ui.sheet) { ui.sheet = null; render(); } });
+// iOS can swallow the first click after you touch a YouTube iframe, so close buttons also react to pointerup.
+document.addEventListener('pointerup', e => {
+  if (ui.sheet && e.target.closest('#sheet [data-a=close]')) { e.preventDefault(); ui.sheet = null; render(); }
+});
 // Close a sheet by dragging its header down (also a fallback if iOS shifts the view after fullscreen video).
 let dragY = null;
 document.addEventListener('touchstart', e => { if (e.target.closest('[data-drag]')) dragY = e.touches[0].clientY; }, { passive: true });
@@ -715,7 +728,13 @@ const ICON = {
   if (store.s.active && !dayById(store.s.active.dayId)) store.setActive(null);
   render();
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
+    navigator.serviceWorker.register('sw.js').then(reg => reg.update()).catch(() => {});
+    // When a new version takes over, reload once so you are on it right away (not mid-workout).
+    let reloaded = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (reloaded || ui.screen === 'workout') return;
+      reloaded = true; location.reload();
+    });
   }
 })();
 
