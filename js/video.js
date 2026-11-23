@@ -67,17 +67,18 @@ export function mountVideo(box, { id, start = 0, end = null }) {
     }
   });
 
-  const params = { start, playsinline: 1, rel: 0, iv_load_policy: 3, modestbranding: 1, controls: 0, disablekb: 1, fs: 0, autoplay: 1, mute: 1 };
+  const params = { start, cc_load_policy: 0, playsinline: 1, rel: 0, iv_load_policy: 3, modestbranding: 1, controls: 0, disablekb: 1, fs: 0, autoplay: 1, mute: 1 };
   if (end) params.end = end;
 
   loadApi().then(YT => {
     player = new YT.Player(host, {
       videoId: id, host: 'https://www.youtube-nocookie.com', playerVars: params,
       events: {
-        onReady: e => { e.target.mute(); e.target.playVideo(); },
+        // Captions turn on by themselves when muted and cover the demo, so switch them off.
+        onReady: e => { e.target.mute(); try { e.target.unloadModule('captions'); } catch {} e.target.playVideo(); },
         onStateChange: e => {
           if (e.data === YT.PlayerState.ENDED) { e.target.seekTo(start, true); e.target.playVideo(); }
-          if (e.data === YT.PlayerState.PLAYING) { playing = true; setIcon(); }
+          if (e.data === YT.PlayerState.PLAYING) { playing = true; setIcon(); try { e.target.unloadModule('captions'); } catch {} }
           if (e.data === YT.PlayerState.PAUSED) { playing = false; setIcon(); }
         },
       },
