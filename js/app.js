@@ -3,7 +3,7 @@ import { store, requestPersistence } from './store.js';
 import {
   data, loadData, allDays, dayById, weekCount, buildSteps, estimateMinutes, exerciseIdsOf, exerciseHistory,
   lastValuesFor, muscleLastTrained, recentRunFor, actTime, daysSince, freshness, topMuscles, weekDays, doneInCurrentCycle,
-  suggestedDay, isLowerUnilateral, lastSessionFor, resolveItem, homeReport, equipmentNeeded, timerFor,
+  suggestedDay, isLowerUnilateral, lastSessionFor, resolveItem, homeReport, equipmentNeeded, timerFor, sideMode, canAlternate,
 } from './plan.js';
 import { mountVideo } from './video.js';
 import { buildReport, parseReport, setReportRPE, keepNotes } from './report.js';
@@ -11,7 +11,7 @@ import { sync } from './sync.js';
 import { unlockAudio, sound, buzz, keepAwake, isStandalone, isIOS } from './device.js';
 import { applyLayout } from './display.js';
 
-export const BUILD = '2026-11-25c';
+export const BUILD = '2026-11-25d';
 const $app = document.getElementById('app');
 const $sheet = document.getElementById('sheet');
 
@@ -212,7 +212,7 @@ function renderExSheet({ exId, blockId, itemIdx, dayId }) {
   const swapNote = res && res.swap ? `<p class="swap-note"><b>${t('homeSwap')}</b> ${t('insteadOf', { name: L(data.ex[res.swap.from].name) })}. ${esc(L(res.swap.note))}</p>` : '';
   return `<h2 class="sheet-title">${esc(L(ex.name))}</h2>
     ${item ? `<p class="presc-line">${t('prescription')}: <b>${esc(presc(item))}</b>${item.note ? ` · ${esc(item.note)}` : ''}</p>` : ''}
-    ${swapNote}${leftFirst}
+    ${swapNote}${leftFirst}${sideModeSeg(ex, item, dayId, blockId)}
     ${video}
     <div class="chips">${prim}${sec}${mob}</div>
     ${equip ? `<p class="muted">${t('equipment')}: ${esc(equip)}</p>` : ''}
@@ -222,6 +222,48 @@ function renderExSheet({ exId, blockId, itemIdx, dayId }) {
     <h3>${t('notes')}</h3>
     <textarea class="notes" data-note="${ex.id}" placeholder="${t('notesPh')}">${esc(store.s.notes[ex.id] || '')}</textarea>
     <p class="muted tiny">${t('reviewFlag')} · ${esc(ex.sourceName)}</p>`;
+}
+
+function sideModeSeg(ex, item, dayId, blockId) {
+  if (!item) return '';
+  const day = dayById(dayId); const block = day && day.blocks.find(b => b.id === blockId);
+  if (!block || !canAlternate(item, ex.id, block.type)) return '';
+  const m = sideMode(ex.id);
+  return `<div class="side-mode"><h3>${t('sidesTitle')}</h3><div class="seg">
+    <button class="${m === 'alt' ? 'on' : ''}" data-a="side-mode" data-ex="${ex.id}" data-v="alt">${t('sidesAlt')}</button>
+    <button class="${m === 'split' ? 'on' : ''}" data-a="side-mode" data-ex="${ex.id}" data-v="split">${t('sidesSplit')}</button></div>
+    <p class="muted small">${m === 'alt' ? t('sidesAltHint') : t('sidesSplitHint')}</p></div>`;
+}
+
+// Change how a single-leg/arm exercise is done. Mid-workout it applies right away if you have not started it yet.
+function setSideMode(exId, mode) {
+  (store.s.sideModes ||= {})[exId] = mode;
+  store.setActive(store.s.active);
+  const a = store.s.active;
+  if (!a || ui.screen !== 'workout') return;
+  const oldSteps = steps;
+  const items = new Set(oldSteps.filter(s => s.exId === exId).map(s => `${s.blockId}:${s.itemIdx}`));
+  const started = [...items].filter(it => Object.keys(a.done).some(k => k.startsWith(it + ':')));
+  if (started.length) { store.setActive(a); showToast(t('sidesNextTime')); return; }
+  (a.modes ||= {})[exId] = mode;
+  loadSteps(a.dayId, a.location || 'gym', a.modes);
+  const remap = list => {
+    const out = []; const added = new Set();
+    for (const k of list) {
+      const it = k.split(':').slice(0, 2).join(':');
+      if (!items.has(it)) { if (stepMap[k]) out.push(k); continue; }
+      if (added.has(it)) continue;
+      added.add(it);
+      out.push(...steps.filter(s => `${s.blockId}:${s.itemIdx}` === it).map(s => s.key));
+    }
+    return out;
+  };
+  const curKey = a.order[a.pos];
+  a.order = remap(a.order); a.plan = remap(a.plan || a.order);
+  const ci = a.order.indexOf(curKey);
+  if (ci >= 0) a.pos = ci; else { let p = 0; while (p < a.order.length && a.done[a.order[p]]) p++; a.pos = Math.min(p, a.order.length - 1); }
+  ui.draft = null; a.draft = null;
+  store.setActive(a);
 }
 
 function renderDaysSheet() {
@@ -244,17 +286,18 @@ function renderDaysSheet() {
 
 // ---------- workout engine ----------
 let steps = [], stepMap = {};
-function loadSteps(dayId, location) { steps = buildSteps(dayById(dayId), location); stepMap = Object.fromEntries(steps.map(s => [s.key, s])); }
+function loadSteps(dayId, location, modes) { steps = buildSteps(dayById(dayId), location, modes); stepMap = Object.fromEntries(steps.map(s => [s.key, s])); }
 
 function startWorkout() {
   unlockAudio();
   const day = dayById(ui.dayId);
   const location = store.settings().location;
-  loadSteps(day.id, location);
+  loadSteps(day.id, location, {});
+  const modes = Object.fromEntries([...new Set(steps.map(s => s.exId))].map(id => [id, sideMode(id)]));
   store.setActive({
     id: 's' + Date.now(), dayId: day.id, start: new Date().toISOString(),
     location, order: steps.map(s => s.key), plan: steps.map(s => s.key), pos: 0, done: {}, phase: 'work', restEnd: null, restTotal: 0,
-    timer: null, workAt: Date.now(), rest: null, redos: {}, events: [],
+    timer: null, workAt: Date.now(), rest: null, redos: {}, events: [], modes,
   });
   ui.draft = null;
   ui.screen = 'workout';
@@ -266,7 +309,7 @@ function startWorkout() {
 function resumeWorkout() {
   unlockAudio();
   const a = store.s.active;
-  loadSteps(a.dayId, a.location || 'gym');
+  loadSteps(a.dayId, a.location || 'gym', a.modes || {});
   a.order = a.order.filter(k => stepMap[k]);
   logEvent('resume');
   store.setActive(a);
@@ -300,6 +343,12 @@ function draftFor(step) {
   const todaySame = today.filter(([k]) => stepMap[k].side === step.side);
   const pick = arr => arr.length ? arr[arr.length - 1][1].weight : null;
   const last = lastValuesFor(step);
+  if (step.alt) {
+    const lastL = lastValuesFor({ ...step, side: 'left' });
+    ui.draft = { key: step.key, repsL: prev?.repsL ?? step.repsL, repsR: prev?.repsR ?? step.repsR,
+      weight: prev?.weight ?? pick(today) ?? lastL?.weight ?? null };
+    return ui.draft;
+  }
   ui.draft = {
     key: step.key,
     reps: prev?.reps ?? step.reps ?? null,
@@ -319,6 +368,7 @@ function completeStep(extra = {}) {
   if (step.durationSec && tm) timerSec = Math.round(step.durationSec - Math.max(0, tm.running ? (tm.endAt - now) / 1000 : tm.remaining));
   a.done[step.key] = {
     reps: step.durationSec ? null : d.reps, weight: step.weighted ? d.weight : null,
+    ...(step.alt ? { alt: true, reps: null, repsL: d.repsL, repsR: d.repsR, targetL: step.repsL, targetR: step.repsR } : {}),
     durationSec: step.durationSec || null, at: new Date(now).toISOString(),
     target: step.durationSec ? null : (step.reps ?? null), swapFrom: step.swapFrom || null,
     workSec: a.workAt ? Math.round((now - a.workAt) / 1000) : null,
@@ -356,7 +406,7 @@ function goBack() {
   logEvent('back', { key, exId: stepMap[key].exId });
   a.pos = p;
   a.timer = null;
-  ui.draft = a.draft = { key, reps: prev.reps ?? stepMap[key].reps, weight: prev.weight };
+  ui.draft = a.draft = prev.alt ? { key, repsL: prev.repsL, repsR: prev.repsR, weight: prev.weight } : { key, reps: prev.reps ?? stepMap[key].reps, weight: prev.weight };
   store.setActive(a);
   render();
 }
@@ -396,20 +446,28 @@ function finishWorkout() {
   const a = A();
   if (a.phase === 'rest') endRest();
   logEvent('finish');
-  const sets = a.order.filter(k => a.done[k]).map(k => {
+  // Alternating sets are logged as a left set and a right set, same as one-side-then-the-other.
+  const sideKey = (k, side) => k.replace(':alt:', `:${side}:`);
+  const sets = a.order.filter(k => a.done[k]).flatMap(k => {
     const s = stepMap[k]; const d = a.done[k];
-    return { key: k, exId: s.exId, side: s.side, setNo: s.setNo, blockId: s.blockId, ...d };
+    if (!d.alt) return [{ key: k, exId: s.exId, side: s.side, setNo: s.setNo, blockId: s.blockId, ...d }];
+    const { repsL, repsR, targetL, targetR, alt, ...rest } = d;
+    const out = [{ ...rest, key: sideKey(k, 'left'), exId: s.exId, side: 'left', setNo: s.setNo, blockId: s.blockId, reps: repsL, target: targetL, alternating: true }];
+    if (repsR || targetR) out.push({ ...rest, key: sideKey(k, 'right'), exId: s.exId, side: 'right', setNo: s.setNo, blockId: s.blockId, reps: repsR, target: targetR, alternating: true });
+    return out;
   }).sort((x, y) => x.at.localeCompare(y.at));
-  const total = a.order.length;
-  const skipped = (a.plan || a.order).filter(k => !a.done[k] && stepMap[k]).map(k => {
+  const skipped = (a.plan || a.order).filter(k => !a.done[k] && stepMap[k]).flatMap(k => {
     const s = stepMap[k];
-    return { key: k, exId: s.exId, side: s.side, setNo: s.setNo, blockId: s.blockId, target: s.reps ?? null, durationSec: s.durationSec || null, swapFrom: s.swapFrom || null };
+    const base = { exId: s.exId, setNo: s.setNo, blockId: s.blockId, durationSec: s.durationSec || null, swapFrom: s.swapFrom || null };
+    if (!s.alt) return [{ ...base, key: k, side: s.side, target: s.reps ?? null }];
+    return [{ ...base, key: sideKey(k, 'left'), side: 'left', target: s.repsL }, ...(s.repsR ? [{ ...base, key: sideKey(k, 'right'), side: 'right', target: s.repsR }] : [])];
   });
+  const total = sets.length + skipped.length;
   const st = store.settings();
   const sess = {
     id: a.id, dayId: a.dayId, start: a.start, end: new Date().toISOString(),
     sets, totalSteps: total, partial: sets.length < total / 2, notes: '',
-    location: a.location || 'gym', plan: a.plan || a.order, skipped, events: a.events || [], rpe: null,
+    location: a.location || 'gym', plan: [...sets.map(x => x.key), ...skipped.map(x => x.key)], skipped, events: a.events || [], rpe: null,
     settings: { restStrength: st.restStrength, restCircuit: st.restCircuit, restSides: st.restSides, extraCalves: st.extraCalves, extraAnkles: st.extraAnkles, extraPogo: st.extraPogo },
   };
   sess.report = buildReport(sess);
@@ -475,7 +533,7 @@ function renderWorkout() {
   }
 
   const d = draftFor(step);
-  const last = lastValuesFor(step);
+  const last = step.alt ? lastValuesFor({ ...step, side: 'left' }) : lastValuesFor(step);
   const lastTxt = last ? t('lastTime', { v: `${last.weight ? fmtW(last.weight) + ' × ' : ''}${last.reps ?? (last.durationSec ? last.durationSec + ' s' : '')}` }) : (step.weighted ? t('firstTime') : '');
   const blockTitle = step.blockType === 'warmup' ? t('block_warmup') : L(step.blockName);
   const showLeftFirst = isLowerUnilateral(ex) && (step.side === 'left' && step.setNo === 1 || (!step.side && step.per === 'side'));
@@ -496,8 +554,20 @@ function renderWorkout() {
           <p class="muted small">${t('tmrRemembered')}</p></div>` : '';
       return `<button class="tmr-line" data-a="tmr-edit">${t('tmrLine', { work: tmr.work, rest: tmr.rest })} · <u>${ui.tmrEdit === step.exId ? t('tmrDone') : t('tmrAdjust')}</u></button>${edit}`;
     })() : '';
-    center = `<div class="ring big" style="--p:${Math.max(0, remaining / step.durationSec)}"><span data-timer>${fmtClock(remaining)}</span></div>
+    const segLine = step.segments > 1 ? `<p class="seg-label" data-seg>${t('position', { n: Math.min(step.segments, Math.floor((step.durationSec - remaining) / (step.durationSec / step.segments)) + 1), total: step.segments })}</p>` : '';
+    center = `${segLine}<div class="ring big" style="--p:${Math.max(0, remaining / step.durationSec)}"><span data-timer>${fmtClock(remaining)}</span></div>
       <div class="row center">${btn}</div>${iv}`;
+  } else if (step.alt) {
+    const sideStep = (k, label, cls) => `<div class="stepper alt-side ${cls}">
+        <button class="step-btn" data-a="reps" data-side="${k}" data-d="-1">−</button>
+        <div class="num"><b>${d[k] ?? '-'}</b><span><span class="side ${cls}">${label}</span> ${t('reps')}</span></div>
+        <button class="step-btn" data-a="reps" data-side="${k}" data-d="1">+</button></div>`;
+    center = `<div class="target alt">${sideStep('repsL', t('left'), 'left')}${step.repsR || d.repsR ? sideStep('repsR', t('right'), 'right') : ''}
+      ${step.weighted ? `<div class="stepper weight">
+        <button class="step-btn" data-a="weight" data-d="-1">−</button>
+        <button class="num" data-a="weight-edit"><b>${d.weight ?? '-'}</b><span>${t('kg')}</span></button>
+        <button class="step-btn" data-a="weight" data-d="1">+</button></div>` : ''}
+    </div>`;
   } else {
     const per = step.per && !step.side ? ` <small>${perLabel(step.per)}</small>` : '';
     center = `<div class="target"><div class="stepper">
@@ -538,6 +608,7 @@ function renderWorkout() {
 
 function stepLabel(s) { return s.round ? t('roundOf', { n: s.round, total: s.rounds }) : t('setOf', { n: s.setNo, total: s.totalSets }); }
 function targetText(s) {
+  if (s.alt) return `${t('left').charAt(0)} ${s.repsL} / ${t('right').charAt(0)} ${s.repsR} ${t('reps')}`;
   if (s.durationSec) return `${s.durationSec >= 120 ? Math.round(s.durationSec / 60) + ' ' + t('min') : s.durationSec + ' s'}`;
   return `${s.reps} ${t('reps')}${s.per && !s.side ? ' ' + perLabel(s.per) : ''}`;
 }
@@ -550,7 +621,8 @@ function renderStepsSheet() {
     const hdr = s.blockId !== lastBlock ? `<h3>${esc(s.blockType === 'warmup' ? t('block_warmup') : L(s.blockName))}</h3>` : '';
     lastBlock = s.blockId;
     const st = a.done[k] ? 'done' : i === a.pos ? 'cur' : '';
-    const val = a.done[k] ? `${a.done[k].weight ? fmtW(a.done[k].weight) + ' × ' : ''}${a.done[k].reps ?? ''}` : targetText(s);
+    const dn = a.done[k];
+    const val = dn ? `${dn.weight ? fmtW(dn.weight) + ' × ' : ''}${dn.alt ? `${t('left').charAt(0)} ${dn.repsL} / ${t('right').charAt(0)} ${dn.repsR}` : dn.reps ?? ''}` : targetText(s);
     return `${hdr}<button class="step-row ${st}" data-a="jump" data-key="${k}" ${a.done[k] ? 'disabled' : ''}>
       <span>${a.done[k] ? ICON.check : ''}</span><span class="grow">${esc(L(ex.name))}<small>${esc(stepLabel(s))}${s.side ? ' · ' + t(s.side) : ''}</small></span><span class="muted">${esc(val)}</span></button>`;
   }).join('');
@@ -777,7 +849,8 @@ document.addEventListener('click', async e => {
     case 'skip': if (A().phase !== 'work') endRest(); skipExercise(); return;
     case 'skiprest': endRest(); store.setActive(A()); break;
     case 'rest-add': A().restEnd += (+el.dataset.d) * 1000; A().restTotal = Math.max(A().restTotal + (+el.dataset.d), 1); store.setActive(A()); break;
-    case 'reps': { const d = draftFor(cur()); d.reps = Math.max(0, (d.reps || 0) + (+el.dataset.d)); A().draft = d; store.setActive(A()); break; }
+    case 'reps': { const d = draftFor(cur()); const f = el.dataset.side || 'reps'; d[f] = Math.max(0, (d[f] || 0) + (+el.dataset.d)); A().draft = d; store.setActive(A()); break; }
+    case 'side-mode': setSideMode(el.dataset.ex, el.dataset.v); delete $sheet.dataset.key; break;
     case 'weight': { const d = draftFor(cur()); const stp = store.settings().weightStep; d.weight = Math.max(0, Math.round(((+d.weight || 0) + (+el.dataset.d) * stp) * 100) / 100); A().draft = d; store.setActive(A()); break; }
     case 'weight-edit': {
       const d = draftFor(cur());
@@ -827,7 +900,7 @@ document.addEventListener('click', async e => {
       store.setTimer(step.exId, next);
       const tm = A().timer; const delta = next.work - now.work;
       if (tm && k === 'work') { if (tm.running) tm.endAt += delta * 1000; else tm.remaining = Math.max(1, tm.remaining + delta); }
-      loadSteps(A().dayId, A().location || 'gym');
+      loadSteps(A().dayId, A().location || 'gym', A().modes || {});
       store.setActive(A());
       break;
     }
@@ -946,6 +1019,14 @@ setInterval(() => {
     const r = document.querySelector('[data-timer]');
     if (r) { r.textContent = fmtClock(left); r.parentElement.style.setProperty('--p', Math.max(0, left / step.durationSec)); }
     beepCountdown(a, left, 'timer');
+    if (step.segments > 1) {
+      const seg = Math.min(step.segments, Math.floor((step.durationSec - left) / (step.durationSec / step.segments)) + 1);
+      if (a._seg !== step.key + seg) {
+        if (a._seg && a._seg.startsWith(step.key)) { sound.end(); buzz([200]); }
+        a._seg = step.key + seg;
+        const sl = document.querySelector('[data-seg]'); if (sl) sl.textContent = t('position', { n: seg, total: step.segments });
+      }
+    }
     if (left <= 0) { sound.end(); buzz([300]); completeStep(); }
   }
 }, 200);

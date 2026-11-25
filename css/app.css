@@ -310,3 +310,17 @@ main { max-width: 640px; margin: 0 auto; padding: calc(var(--safe-t) + 16px) 16p
 [data-orient="landscape"]:is([data-layout="tablet"], [data-tv]) .wo-body > .wo-ctrl { align-self: center; }
 [data-orient="landscape"]:is([data-layout="tablet"], [data-tv]) .num b { font-size: 120px; }
 [data-tv][data-orient="landscape"] .num b { font-size: 130px; }
+
+/* alternating sides and multi-position holds */
+.target.alt { gap: 10px; }
+.stepper.alt-side .num b { font-size: 50px; }
+.stepper.alt-side .step-btn { width: 52px; height: 52px; font-size: 26px; }
+.target.alt { margin-top: 8px; }
+.target.alt .stepper.weight .num b { font-size: 36px; }
+.stepper.alt-side .num > span { display: flex; gap: 6px; align-items: center; }
+.stepper.alt-side .side { font-size: 12px; padding: 2px 8px; }
+.target.alt > .muted { margin: 0; max-width: 320px; }
+[data-layout="tablet"] .stepper.alt-side .num b { font-size: 76px; }
+.seg-label { font-size: 20px; font-weight: 700; color: var(--accent); margin: 6px 0 -6px; }
+[data-tv] .seg-label { font-size: 26px; }
+.side-mode .seg { margin-bottom: 6px; }

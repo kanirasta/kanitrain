@@ -697,6 +697,66 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     await tap('#sheet .close');
   });
 
+  // ---------- alternating sides, multi-position holds ----------
+  await test('sides: the lunge + plate press alternates sides by default, others stay one side then the other', async () => {
+    const r = await p.evaluate(async () => {
+      const m = await import('./js/plan.js');
+      const st = m.buildSteps(m.dayById('w2-mon'), 'gym');
+      return { lunge: st.filter(s => s.exId === 'lunge_front_lateral_plate_press'), split: st.filter(s => s.side === 'left').length };
+    });
+    assert(r.lunge.length === 3 && r.lunge.every(s => s.alt && s.repsL === 8 && s.repsR === 8 && !s.side), JSON.stringify(r.lunge[0]));
+    assert(r.split > 0, 'other unilateral work should still split');
+  });
+  await test('sides: alternating set logs left and right reps, with extra left reps', async () => {
+    await tap('[data-a=go][data-to=home]'); await tap('[data-a=days]'); await tap('.day-row[data-day=w2-mon]');
+    await tap('[data-a=start]'); await p.waitForSelector('.workout');
+    await tap('[data-a=steps]');
+    await tap('[data-a=jump][data-key="main:3:alt:1"]');
+    assert(await exists('.stepper.alt-side.left') && await exists('.stepper.alt-side.right'), 'no left/right steppers');
+    await tap('[data-a=reps][data-side=repsL][data-d="1"]'); await tap('[data-a=reps][data-side=repsL][data-d="1"]');
+    await tap('[data-a=reps][data-side=repsR][data-d="-1"]');
+    await tap('[data-a=done]');
+    await tap('[data-a=menu]'); await tap('#sheet [data-a=finish]'); await p.waitForSelector('.summary');
+    const s = await p.evaluate(() => window.__app.store.s.sessions.at(-1));
+    const L = s.sets.find(x => x.key === 'main:3:left:1'), R = s.sets.find(x => x.key === 'main:3:right:1');
+    assert(L && R && L.reps === 10 && L.target === 8 && R.reps === 7 && R.target === 8 && L.alternating, JSON.stringify([L, R]));
+    assert(s.skipped.some(x => x.key === 'main:3:left:2') && s.skipped.some(x => x.key === 'main:3:right:3'), 'alt skipped sets not split by side');
+    const md = await p.inputValue('textarea[data-sessnote]');
+    assert(/Left vs right: reps 10 vs 7/.test(md), 'report misses left vs right');
+    await tap('[data-a=sess-discard]'); await p.waitForSelector('.home');
+  });
+  await test('sides: switching to one side then the other in the exercise popup applies to the workout', async () => {
+    await tap('[data-a=days]'); await tap('.day-row[data-day=w2-mon]');
+    await tap('[data-a=start]'); await p.waitForSelector('.workout');
+    await tap('[data-a=steps]'); await tap('[data-a=jump][data-key="main:3:alt:1"]');
+    await tap('.wo-name'); await p.waitForSelector('.side-mode');
+    await tap('[data-a=side-mode][data-v=split]');
+    assert(await p.evaluate(() => window.__app.store.s.sideModes.lunge_front_lateral_plate_press === 'split'), 'not saved');
+    const a = await active();
+    assert(a.order.filter(k => k.startsWith('main:3:')).length === 6 && a.order[a.pos] === 'main:3:left:1', 'not rebuilt: ' + a.order[a.pos]);
+    await tap('#sheet .close');
+    assert(await exists('.side.left') && !(await exists('.stepper.alt-side')), 'screen not switched');
+    await tap('[data-a=menu]'); await tap('#sheet [data-a=discard-wo]'); await p.waitForSelector('.home');
+    await p.evaluate(() => { delete window.__app.store.s.sideModes.lunge_front_lateral_plate_press; });
+  });
+  await test('holds: adductor squeeze is 60 s with a cue at each of the 3 positions', async () => {
+    const r = await p.evaluate(async () => {
+      const m = await import('./js/plan.js');
+      return m.buildSteps(m.dayById('w3-fri'), 'gym').filter(s => s.exId === 'adductor_squeeze_3pos');
+    });
+    assert(r.length === 3 && r.every(s => s.durationSec === 60 && s.segments === 3), JSON.stringify(r[0]));
+    await tap('[data-a=days]'); await tap('.day-row[data-day=w3-fri]');
+    await tap('[data-a=start]'); await p.waitForSelector('.workout');
+    await tap('[data-a=steps]');
+    const key = await p.evaluate(() => window.__app.store.s.active.order.find(k => k.startsWith('main:0:')));
+    await tap(`[data-a=jump][data-key="${key}"]`);
+    assert((await p.textContent('[data-seg]')).includes('Position 1 of 3'), 'no position label');
+    await tap('[data-a=timer-start]');
+    await p.evaluate(() => { const a = window.__app.store.s.active; a.timer.endAt = Date.now() + 35000; });
+    await p.waitForFunction(() => /Position 2 of 3/.test(document.querySelector('[data-seg]')?.textContent || ''));
+    await tap('[data-a=menu]'); await tap('#sheet [data-a=discard-wo]'); await p.waitForSelector('.home');
+  });
+
   // ---------- iPad and TV ----------
   await test('layout: iPhone stays the phone layout', async () => {
     const l = await p.evaluate(() => [document.documentElement.dataset.layout, document.documentElement.style.zoom]);
