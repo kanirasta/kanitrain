@@ -110,6 +110,14 @@ export function equipmentNeeded(day, location = store.settings().location, owned
   return list.filter(g => !list.some(o => o !== g && o.types.length < g.types.length && o.types.every(q => g.types.includes(q))));
 }
 
+// ---------- Timers ----------
+// Time-based exercises (holds) run as work/rest intervals. Your changes are remembered per exercise.
+export const TIMER_DEFAULT = { work: 30, rest: 30 };
+export function timerFor(exId, item) {
+  const t = (store.s.timers || {})[exId] || {};
+  return { work: t.work ?? (item && item.durationSec) ?? TIMER_DEFAULT.work, rest: t.rest ?? TIMER_DEFAULT.rest };
+}
+
 // ---------- Steps ----------
 // A step is one tap of "Done": one set, or one side of a set for unilateral strength work.
 function shouldSplit(item, ex, blockType) {
@@ -143,6 +151,7 @@ export function buildSteps(day, location = store.settings().location) {
       const res = resolveItem(item, location, owned);
       const ex = data.ex[res.exId];
       const split = shouldSplit(item, ex, bt);
+      const tmr = ex.timed ? timerFor(res.exId, item) : null;
       const list = [];
       if (split) {
         for (const s of sideSeq(item)) {
@@ -156,7 +165,8 @@ export function buildSteps(day, location = store.settings().location) {
         ...x,
         key: `${block.id}:${ii}:${x.side || 'b'}:${x.setNo}`,
         blockId: block.id, blockType: bt, blockName: block.name, itemIdx: ii,
-        exId: res.exId, swapFrom: res.swap ? res.swap.from : null, durationSec: item.durationSec || null, per: item.per || null,
+        exId: res.exId, swapFrom: res.swap ? res.swap.from : null, durationSec: tmr ? tmr.work : item.durationSec || null, per: item.per || null,
+        timed: !!tmr, timedRest: tmr ? tmr.rest : null,
         note: item.note || null, weighted: isWeighted(ex),
       }));
     });
@@ -189,6 +199,15 @@ export function buildSteps(day, location = store.settings().location) {
       }
     }
   }
+  // Holds get their own break after each interval (except the quick switch from left to right).
+  steps.forEach((s, i) => {
+    if (!s.timed) return;
+    const n = steps[i + 1];
+    if (s.side === 'left' && n && n.blockId === s.blockId && n.itemIdx === s.itemIdx && n.side === 'right') return;
+    // Between sets of the same hold your break wins. Before moving on (or at a circuit round's end) keep the longer rest.
+    const sameNext = n && n.blockId === s.blockId && n.itemIdx === s.itemIdx && s.blockType !== 'circuit';
+    s.restAfter = sameNext ? s.timedRest : Math.max(s.restAfter || 0, s.timedRest);
+  });
   if (steps.length) steps[steps.length - 1].restAfter = 0;
   return steps;
 }

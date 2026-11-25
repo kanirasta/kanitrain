@@ -3,14 +3,14 @@ import { store, requestPersistence } from './store.js';
 import {
   data, loadData, allDays, dayById, weekCount, buildSteps, estimateMinutes, exerciseIdsOf, exerciseHistory,
   lastValuesFor, muscleLastTrained, recentRunFor, actTime, daysSince, freshness, topMuscles, weekDays, doneInCurrentCycle,
-  suggestedDay, isLowerUnilateral, lastSessionFor, resolveItem, homeReport, equipmentNeeded,
+  suggestedDay, isLowerUnilateral, lastSessionFor, resolveItem, homeReport, equipmentNeeded, timerFor,
 } from './plan.js';
 import { mountVideo } from './video.js';
 import { buildReport, parseReport, setReportRPE, keepNotes } from './report.js';
 import { sync } from './sync.js';
 import { unlockAudio, sound, buzz, keepAwake, isStandalone, isIOS } from './device.js';
 
-export const BUILD = '2026-11-25a';
+export const BUILD = '2026-11-25b';
 const $app = document.getElementById('app');
 const $sheet = document.getElementById('sheet');
 
@@ -41,8 +41,13 @@ const dayTitle = d => `${t('week', { n: d.week })} · ${t(d.weekday)}`;
 const perLabel = p => ({ side: t('perSide'), leg: t('perLeg'), arm: t('perArm'), step: t('perStep') }[p] || '');
 const fmtW = w => (w == null || w === '' ? '' : `${+w} ${t('kg')}`);
 
-function presc(item) {
+function presc(item, exId) {
   const per = item.per ? ` ${perLabel(item.per)}` : '';
+  // Holds run on a timer even when the plan (or the exercise it replaces) gives reps.
+  if (exId && data.ex[exId] && data.ex[exId].timed) {
+    const tm = timerFor(exId, item);
+    return `${item.sets} × ${tm.work} s${per}`;
+  }
   if (item.sides) {
     const l = item.sides.left, r = item.sides.right;
     return `${l.sets}×${l.reps} ${t('left').charAt(0)} / ${r.sets}×${r.reps} ${t('right').charAt(0)}`;
@@ -129,7 +134,7 @@ function renderHome() {
         : r.missing.length ? `<small class="swap missing">${t('needs')} ${esc(r.missing.map(g => g.map(equipName).join(orWord)).join(', '))}</small>` : '';
       return `<button class="ex-row" data-a="ex" data-ex="${ex.id}" data-block="${b.id}" data-item="${ii}">
         <span class="ex-name">${esc(L(ex.name))}${ex.videos.length ? ICON.play : ''}${sub}</span>
-        <span class="ex-presc">${esc(presc(item))}</span>
+        <span class="ex-presc">${esc(presc(item, r.exId))}</span>
       </button>`;
     }).join('');
     return `<section class="block${b.extra ? ' extra' : ''}"><h3>${esc(title)}</h3>${rows}</section>`;
@@ -411,7 +416,7 @@ function finishWorkout() {
   store.setActive(null);
   keepAwake(false);
   sound.end();
-  checkWeekAdvance();
+  checkWeekAdvance(sess);
   ui.summaryId = sess.id;
   ui.summaryFrom = 'home';
   ui.screen = 'summary';
@@ -419,11 +424,13 @@ function finishWorkout() {
   render();
 }
 
-function checkWeekAdvance() {
+function checkWeekAdvance(sess) {
   const st = store.settings();
   const days = weekDays(st.week);
   if (days.every(d => doneInCurrentCycle(d.id))) {
     const next = st.week >= weekCount() ? 1 : st.week + 1;
+    // Remember, so deleting this workout can undo the week change.
+    if (sess) store.updateSession(sess.id, { weekAdvance: { from: st.week, to: next, prevStartedAt: store.s.weekStartedAt || null } });
     store.s.weekStartedAt = new Date().toISOString();
     store.setSetting('week', next);
     setTimeout(() => showToast(t('weekDone', { n: days[0].week, m: next })), 400);
@@ -480,8 +487,16 @@ function renderWorkout() {
     const btn = !tm ? `<button class="btn primary" data-a="timer-start">${ICON.play} ${t('startTimer')}</button>`
       : tm.running ? `<button class="btn ghost" data-a="timer-pause">${t('pause')}</button>`
         : `<button class="btn primary" data-a="timer-start">${t('resumeTimer')}</button>`;
+    const iv = step.timed ? (() => {
+      const tmr = timerFor(step.exId);
+      const edit = ui.tmrEdit === step.exId ? `<div class="tmr-edit">
+          <div class="stepper small"><button class="step-btn" data-a="tmr" data-k="work" data-d="-5">−</button><div class="num"><b>${tmr.work} s</b><span>${t('tmrWork')}</span></div><button class="step-btn" data-a="tmr" data-k="work" data-d="5">+</button></div>
+          <div class="stepper small"><button class="step-btn" data-a="tmr" data-k="rest" data-d="-5">−</button><div class="num"><b>${tmr.rest} s</b><span>${t('tmrRest')}</span></div><button class="step-btn" data-a="tmr" data-k="rest" data-d="5">+</button></div>
+          <p class="muted small">${t('tmrRemembered')}</p></div>` : '';
+      return `<button class="tmr-line" data-a="tmr-edit">${t('tmrLine', { work: tmr.work, rest: tmr.rest })} · <u>${ui.tmrEdit === step.exId ? t('tmrDone') : t('tmrAdjust')}</u></button>${edit}`;
+    })() : '';
     center = `<div class="ring big" style="--p:${Math.max(0, remaining / step.durationSec)}"><span data-timer>${fmtClock(remaining)}</span></div>
-      <div class="row center">${btn}</div>`;
+      <div class="row center">${btn}</div>${iv}`;
   } else {
     const per = step.per && !step.side ? ` <small>${perLabel(step.per)}</small>` : '';
     center = `<div class="target"><div class="stepper">
@@ -545,7 +560,8 @@ function renderMenuSheet() {
   return `<h2 class="sheet-title">${esc(dayTitle(dayById(A().dayId)))}</h2>
     <button class="menu-row" data-a="skip">${t('skipEx')}<small>${t('skipHint')}</small></button>
     <button class="menu-row" data-a="steps">${t('allSteps')}</button>
-    <button class="menu-row danger" data-a="finish">${t('finishEarly')}</button>`;
+    <button class="menu-row" data-a="finish">${t('finishEarly')}<small>${t('finishEarlyHint')}</small></button>
+    <button class="menu-row danger" data-a="discard-wo">${t('discardWo')}<small>${t('discardWoHint')}</small></button>`;
 }
 
 // ---------- summary ----------
@@ -588,6 +604,9 @@ function renderSummary() {
       <div class="row"><button class="btn ghost small" data-a="sess-share" data-id="${sess.id}">${t('share')}</button>
         <button class="btn ghost small" data-a="sess-regen" data-id="${sess.id}">${t('regen')}</button></div>
       <p class="muted small sync-line">${esc(syncLine(sess))}</p></section>
+    <section class="danger-zone">${sess.savedAt || ui.summaryFrom === 'history'
+      ? `<button class="btn danger small" data-a="sess-del" data-id="${sess.id}">${t('deleteWo')}</button>`
+      : `<button class="btn danger small" data-a="sess-discard" data-id="${sess.id}">${t('discardSess')}</button>`}</section>
     <div class="start-bar"><button class="btn primary big" data-a="sess-save" data-id="${sess.id}">${t('save')}</button></div>
   </main>`;
 }
@@ -600,12 +619,23 @@ function syncLine(sess) {
   return st.queue.length ? t('syncPending', { n: st.queue.length }) : '';
 }
 
+function deleteSession(id) {
+  const sess = store.s.sessions.find(x => x.id === id);
+  if (!sess) return;
+  const wa = sess.weekAdvance;
+  if (wa && store.settings().week === wa.to) { store.s.weekStartedAt = wa.prevStartedAt; store.setSetting('week', wa.from); }
+  sync.remove(sess);
+  store.deleteSession(id);
+  sync.flush();
+  ui.dayId = null;
+}
+
 function saveSession(id) {
   const sess = store.s.sessions.find(x => x.id === id);
   const box = document.querySelector('textarea[data-sessnote]');
   const md = box ? box.value : sess.report || '';
   const parsed = parseReport(md);
-  store.updateSession(id, { report: md, notes: parsed.notes, sideNote: parsed.sideNote || '', painNote: parsed.painNote || '', rpe: parsed.rpe ?? sess.rpe ?? null });
+  store.updateSession(id, { savedAt: new Date().toISOString(), report: md, notes: parsed.notes, sideNote: parsed.sideNote || '', painNote: parsed.painNote || '', rpe: parsed.rpe ?? sess.rpe ?? null });
   if (sync.enabled()) { sync.enqueue(id); sync.flush(); }
   ui.screen = ui.summaryFrom === 'history' ? 'history' : 'home';
   window.scrollTo(0, 0);
@@ -775,6 +805,29 @@ document.addEventListener('click', async e => {
       break;
     }
     case 'sess-save': saveSession(el.dataset.id); return;
+    case 'sess-discard':
+      if (!confirm(t('discardSessConfirm'))) return;
+      deleteSession(el.dataset.id); ui.screen = 'home'; window.scrollTo(0, 0); render(); showToast(t('discarded')); return;
+    case 'sess-del': {
+      const sess = store.s.sessions.find(x => x.id === el.dataset.id);
+      if (!confirm(sess && sess.syncedAt ? t('deleteWoConfirmGh') : t('deleteWoConfirm'))) return;
+      deleteSession(el.dataset.id); ui.screen = 'history'; window.scrollTo(0, 0); render(); showToast(t('deleted')); return;
+    }
+    case 'discard-wo':
+      if (!confirm(t('discardWoConfirm'))) return;
+      store.setActive(null); keepAwake(false); ui.sheet = null; ui.screen = 'home'; ui.draft = null; window.scrollTo(0, 0); render(); showToast(t('discarded')); return;
+    case 'tmr-edit': ui.tmrEdit = ui.tmrEdit === cur().exId ? null : cur().exId; break;
+    case 'tmr': {
+      const step = cur(); const k = el.dataset.k; const d = +el.dataset.d;
+      const now = timerFor(step.exId);
+      const next = { ...now, [k]: Math.max(k === 'work' ? 5 : 0, Math.min(600, now[k] + d)) };
+      store.setTimer(step.exId, next);
+      const tm = A().timer; const delta = next.work - now.work;
+      if (tm && k === 'work') { if (tm.running) tm.endAt += delta * 1000; else tm.remaining = Math.max(1, tm.remaining + delta); }
+      loadSteps(A().dayId, A().location || 'gym');
+      store.setActive(A());
+      break;
+    }
     case 'sess-share': await shareReport(el.dataset.id); return;
     case 'sess-regen': {
       const sess = store.s.sessions.find(x => x.id === el.dataset.id);

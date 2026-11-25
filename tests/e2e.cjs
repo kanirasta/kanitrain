@@ -391,6 +391,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     const m = url.pathname.match(/^\/repos\/kanirasta\/kanitrain-logs\/contents\/(.+)$/);
     if (!m) return r.fulfill({ status: 404, body: '{}' });
     const fp = decodeURIComponent(m[1]);
+    if (req.method() === 'DELETE') { const b = JSON.parse(req.postData()); if (!ghFiles[fp]) return r.fulfill({ status: 404, body: '{}' }); if (b.sha !== ghFiles[fp].sha) return r.fulfill({ status: 409, body: '{}' }); delete ghFiles[fp]; return r.fulfill({ status: 200, contentType: 'application/json', body: '{}' }); }
     if (req.method() === 'GET') return ghFiles[fp] ? r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ sha: ghFiles[fp].sha }) }) : r.fulfill({ status: 404, body: '{}' });
     const b = JSON.parse(req.postData());
     if (ghFiles[fp] && b.sha !== ghFiles[fp].sha) return r.fulfill({ status: 422, contentType: 'application/json', body: '{"message":"sha wasn\'t supplied"}' });
@@ -443,6 +444,73 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     assert(await p.isVisible('.update-bar'), 'no banner');
     assert((await p.textContent('.update-bar')).includes('Tap to reload'), 'banner text');
     await p.evaluate(() => { window.__app.ui.updateReady = false; window.__app.render(); });
+  });
+
+  // ---------- holds, delete, discard, zoom ----------
+  await test('holds: the wall sit home swap runs as 30 s on / 30 s break instead of reps', async () => {
+    const r = await p.evaluate(async () => {
+      const m = await import('./js/plan.js');
+      const st = m.buildSteps(m.dayById('w2-mon'), 'home').filter(s => s.exId === 'wall_sit_plate');
+      const gym = m.buildSteps(m.dayById('w2-mon'), 'gym').filter(s => s.exId === 'ball_wall_squat_plate');
+      const sp = m.buildSteps(m.dayById('w1-fri'), 'gym').filter(s => s.exId === 'side_plank');
+      return { st, gym, sp };
+    });
+    assert(r.st.length === 4 && r.st.every(s => s.durationSec === 30 && s.timed && s.restAfter >= 30), JSON.stringify(r.st[0]));
+    assert(r.gym.every(s => !s.durationSec && s.reps === 8), 'gym version should stay reps');
+    assert(r.sp[0].side === 'left' && r.sp[0].durationSec === 20 && r.sp[0].restAfter <= 10 && r.sp[1].restAfter >= 30, 'side plank: ' + JSON.stringify(r.sp.slice(0, 2).map(s => [s.side, s.durationSec, s.restAfter])));
+  });
+  await test('holds: adjust on and break during a workout, remembered next time', async () => {
+    await p.evaluate(() => window.__app.store.setSetting('location', 'home'));
+    await tap('[data-a=go][data-to=home]'); await tap('[data-a=days]'); await tap('.day-row[data-day=w2-mon]');
+    assert((await p.textContent('.plan')).includes('4 × 30 s'), 'home preview should show the hold time');
+    await tap('[data-a=start]'); await p.waitForSelector('.workout');
+    await tap('[data-a=steps]');
+    const key = await p.evaluate(() => window.__app.store.s.active.order.find(k => k.startsWith('main:1:')));
+    await tap(`[data-a=jump][data-key="${key}"]`);
+    assert(await exists('.tmr-line'), 'no interval line');
+    assert((await p.textContent('.tmr-line')).includes('30 s on · 30 s break'), await p.textContent('.tmr-line'));
+    await tap('[data-a=tmr-edit]');
+    await tap('[data-a=tmr][data-k=work][data-d="5"]'); await tap('[data-a=tmr][data-k=rest][data-d="-5"]'); await tap('[data-a=tmr][data-k=rest][data-d="-5"]');
+    assert((await p.textContent('[data-timer]')).trim() === '0:35', 'timer not updated: ' + await p.textContent('[data-timer]'));
+    const tm = await p.evaluate(() => window.__app.store.s.timers.wall_sit_plate);
+    assert(tm.work === 35 && tm.rest === 20, JSON.stringify(tm));
+    await tap('[data-a=timer-start]'); await sleep(300); await tap('[data-a=done]');
+    assert(await exists('[data-a=skiprest]'), 'no break after the hold');
+    const left = await p.evaluate(() => (window.__app.store.s.active.restEnd - Date.now()) / 1000);
+    assert(left > 15 && left <= 20, 'break should be 20 s, got ' + left);
+  });
+  await test('discard: menu discards the workout without saving anything', async () => {
+    const n = await p.evaluate(() => window.__app.store.s.sessions.length);
+    await tap('[data-a=menu]'); await tap('#sheet [data-a=discard-wo]');
+    await p.waitForSelector('.home');
+    assert(await p.evaluate(() => !window.__app.store.s.active), 'still active');
+    assert(await p.evaluate(() => window.__app.store.s.sessions.length) === n, 'a session was saved');
+    await p.evaluate(() => window.__app.store.setSetting('location', 'gym'));
+  });
+  await test('discard: end screen discard drops the workout and sends nothing', async () => {
+    const n = await p.evaluate(() => window.__app.store.s.sessions.length);
+    const files = Object.keys(ghFiles).length;
+    await tap('[data-a=go][data-to=home]'); await tap('[data-a=start]'); await p.waitForSelector('.workout');
+    await tap('[data-a=menu]'); await tap('#sheet [data-a=finish]'); await p.waitForSelector('.summary');
+    assert(!(await exists('[data-a=sess-del]')), 'fresh workout should offer discard, not delete');
+    await tap('[data-a=sess-discard]'); await p.waitForSelector('.home'); await sleep(300);
+    assert(await p.evaluate(() => window.__app.store.s.sessions.length) === n, 'not discarded');
+    assert(Object.keys(ghFiles).length === files, 'something was uploaded');
+  });
+  await test('delete: a logged workout is deleted from History and from GitHub', async () => {
+    const n = await p.evaluate(() => window.__app.store.s.sessions.length);
+    const files = Object.keys(ghFiles).length;
+    await tap('[data-a=go][data-to=history]'); await tap('.history .day-row >> nth=0'); await p.waitForSelector('.summary');
+    const path = await p.evaluate(id => window.__app.store.s.sessions.find(s => s.id === id).syncPath, await p.evaluate(() => window.__app.ui.summaryId));
+    await tap('[data-a=sess-del]'); await p.waitForSelector('.history');
+    await p.waitForFunction(() => window.__app.store.s.sync.deletes.length === 0);
+    assert(await p.evaluate(() => window.__app.store.s.sessions.length) === n - 1, 'not deleted');
+    assert(Object.keys(ghFiles).length === files - 2 && !ghFiles[path + '.md'] && !ghFiles[path + '.json'], 'GitHub files not deleted');
+  });
+  await test('zoom: double-tap zoom is off', async () => {
+    const ta = await p.evaluate(() => [getComputedStyle(document.body).touchAction, getComputedStyle(document.querySelector('button')).touchAction]);
+    assert(ta.every(v => v === 'manipulation'), ta.join());
+    assert((await p.getAttribute('meta[name=viewport]', 'content')).includes('maximum-scale=1'), 'viewport');
   });
 
   await test('offline install: first visit does not reload the page under you', async () => {
