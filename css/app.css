@@ -248,3 +248,15 @@ main { max-width: 640px; margin: 0 auto; padding: calc(var(--safe-t) + 16px) 16p
 .act-row .day-head .btn { margin-left: 8px; padding: 4px 8px; }
 .extras h3 { font-size: 14px; font-weight: 500; margin: 12px 0 6px; }
 .act-form .btn.big { display: block; width: 100%; margin-top: 6px; }
+
+/* report and sync */
+.seg.rpe { margin-bottom: 0; }
+.seg.rpe button { padding: 9px 0; font-variant-numeric: tabular-nums; }
+.card.report .report-text { min-height: 60vh; line-height: 1.4; font-size: 16px; }
+.card.report .row { margin-top: 8px; }
+.sync-line { margin: 8px 0 0; }
+.sync-form .field { display: flex; flex-direction: column; gap: 4px; font-size: 14px; margin-bottom: 10px; }
+.sync-form input { font-size: 16px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--text); }
+.sync-test { margin: 10px 0 0; color: var(--danger); }
+.sync-test.good { color: var(--accent); }
+.update-bar { position: sticky; top: 0; z-index: 30; display: block; width: 100%; padding: calc(var(--safe-t) + 10px) 16px 10px; background: var(--accent); color: var(--accent-ink); font-weight: 700; font-size: 15px; text-align: center; }
