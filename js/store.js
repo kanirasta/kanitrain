@@ -29,12 +29,15 @@ const DEFAULTS = {
     extraCalves: true,  // optional extras added on top of the coach's plan
     extraAnkles: true,
     extraPogo: false,
+    display: 'auto',    // auto | phone | tablet
+    tv: 'off',          // off | on | auto (on when an iPad is in landscape)
   },
   equipment: null,   // filled with DEFAULT_EQUIPMENT on first run
   sessions: [],      // finished workouts
   activities: [],    // runs and swims: {id, type, date 'YYYY-MM-DD', min, km, effort}
   active: null,      // workout in progress (for resume)
   notes: {},         // exerciseId -> text
+  timers: {},        // exerciseId -> {work, rest} seconds, for holds
   lastBackupAt: null,
 };
 
@@ -92,6 +95,8 @@ export const store = {
   equipment() { return state.equipment; },
   activities() { return state.activities || (state.activities = []); },
   addActivity(a) { this.activities().push({ ...a, id: 'act' + Date.now() }); save(); },
+  setTimer(exId, v) { (state.timers ||= {})[exId] = v; save(); },
+  deleteSession(id) { state.sessions = state.sessions.filter(s => s.id !== id); save(); },
   deleteActivity(id) { state.activities = this.activities().filter(a => a.id !== id); save(); },
   saveEquipment(item) {
     if (item.id) { const i = state.equipment.findIndex(e => e.id === item.id); if (i >= 0) state.equipment[i] = item; }

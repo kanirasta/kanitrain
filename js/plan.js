@@ -110,6 +110,27 @@ export function equipmentNeeded(day, location = store.settings().location, owned
   return list.filter(g => !list.some(o => o !== g && o.types.length < g.types.length && o.types.every(q => g.types.includes(q))));
 }
 
+// ---------- Timers ----------
+// Time-based exercises (holds) run as work/rest intervals. Your changes are remembered per exercise.
+export const TIMER_DEFAULT = { work: 30, rest: 30 };
+export function timerFor(exId, item) {
+  const t = (store.s.timers || {})[exId] || {};
+  // Multi-position holds (e.g. 20 s in each of 3 positions) run as one interval covering all positions.
+  const segs = (data.ex[exId] && data.ex[exId].segments) || 1;
+  const planWork = item && item.durationSec ? item.durationSec * segs : null;
+  return { work: t.work ?? planWork ?? TIMER_DEFAULT.work, rest: t.rest ?? TIMER_DEFAULT.rest };
+}
+
+// Single-leg or single-arm work: 'alt' = both sides inside each set (left then right), 'split' = all left reps, then all right.
+export function sideMode(exId, overrides) {
+  if (overrides && overrides[exId]) return overrides[exId];
+  return (store.s.sideModes || {})[exId] ?? (data.ex[exId] && data.ex[exId].sideMode) ?? 'split';
+}
+export function canAlternate(item, exId, blockType) {
+  const ex = data.ex[exId];
+  return !!ex && !item.durationSec && !ex.timed && shouldSplit(item, ex, blockType);
+}
+
 // ---------- Steps ----------
 // A step is one tap of "Done": one set, or one side of a set for unilateral strength work.
 function shouldSplit(item, ex, blockType) {
@@ -132,7 +153,8 @@ function sideSeq(item) {
   return out;
 }
 
-export function buildSteps(day, location = store.settings().location) {
+// modes: per-workout side modes, so a workout keeps the mode it started with.
+export function buildSteps(day, location = store.settings().location, modes = null) {
   const st = store.settings();
   const owned = ownedTypes();
   const steps = [];
@@ -143,8 +165,19 @@ export function buildSteps(day, location = store.settings().location) {
       const res = resolveItem(item, location, owned);
       const ex = data.ex[res.exId];
       const split = shouldSplit(item, ex, bt);
+      const tmr = ex.timed ? timerFor(res.exId, item) : null;
       const list = [];
-      if (split) {
+      const alt = split && canAlternate(item, res.exId, bt) && sideMode(res.exId, modes) === 'alt';
+      if (alt) {
+        // One step per set; you log left and right reps on the same screen.
+        const Ls = item.sides ? item.sides.left : { sets: item.sets, reps: item.reps };
+        const Rs = item.sides ? item.sides.right : { sets: item.sets, reps: item.reps };
+        const n = Math.max(Ls.sets, Rs.sets);
+        for (let i = 1; i <= n; i++) {
+          const repsL = i <= Ls.sets ? Ls.reps : 0, repsR = i <= Rs.sets ? Rs.reps : 0;
+          list.push({ side: null, alt: true, setNo: i, totalSets: n, reps: repsL, repsL, repsR });
+        }
+      } else if (split) {
         for (const s of sideSeq(item)) {
           const reps = item.sides ? item.sides[s.side].reps : item.reps;
           list.push({ side: s.side, setNo: s.n, totalSets: s.total, reps });
@@ -154,9 +187,10 @@ export function buildSteps(day, location = store.settings().location) {
       }
       return list.map(x => ({
         ...x,
-        key: `${block.id}:${ii}:${x.side || 'b'}:${x.setNo}`,
+        key: `${block.id}:${ii}:${x.alt ? 'alt' : x.side || 'b'}:${x.setNo}`,
         blockId: block.id, blockType: bt, blockName: block.name, itemIdx: ii,
-        exId: res.exId, swapFrom: res.swap ? res.swap.from : null, durationSec: item.durationSec || null, per: item.per || null,
+        exId: res.exId, swapFrom: res.swap ? res.swap.from : null, durationSec: tmr ? tmr.work : item.durationSec || null, per: item.per || null,
+        timed: !!tmr, timedRest: tmr ? tmr.rest : null, segments: tmr ? ex.segments || 1 : 1,
         note: item.note || null, weighted: isWeighted(ex),
       }));
     });
@@ -189,6 +223,15 @@ export function buildSteps(day, location = store.settings().location) {
       }
     }
   }
+  // Holds get their own break after each interval (except the quick switch from left to right).
+  steps.forEach((s, i) => {
+    if (!s.timed) return;
+    const n = steps[i + 1];
+    if (s.side === 'left' && n && n.blockId === s.blockId && n.itemIdx === s.itemIdx && n.side === 'right') return;
+    // Between sets of the same hold your break wins. Before moving on (or at a circuit round's end) keep the longer rest.
+    const sameNext = n && n.blockId === s.blockId && n.itemIdx === s.itemIdx && s.blockType !== 'circuit';
+    s.restAfter = sameNext ? s.timedRest : Math.max(s.restAfter || 0, s.timedRest);
+  });
   if (steps.length) steps[steps.length - 1].restAfter = 0;
   return steps;
 }

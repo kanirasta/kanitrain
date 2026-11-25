@@ -10,7 +10,7 @@ export const DEFAULT_REPO = 'kanirasta/kanitrain-logs';
 const get = k => { try { return localStorage.getItem(k) || ''; } catch { return ''; } };
 const set = (k, v) => { try { v ? localStorage.setItem(k, v) : localStorage.removeItem(k); } catch {} };
 
-const st = () => (store.s.sync ||= { repo: DEFAULT_REPO, queue: [], lastOkAt: null, error: null });
+const st = () => { const s = (store.s.sync ||= { repo: DEFAULT_REPO, queue: [], lastOkAt: null, error: null }); s.deletes ||= []; return s; };
 let busy = null;
 let onChange = () => {};
 
@@ -43,6 +43,22 @@ async function putFile(path, text, message, sha) {
   return res.body.content && res.body.content.sha;
 }
 
+async function deleteFile(path, sha) {
+  const enc = path.split('/').map(encodeURIComponent).join('/');
+  const url = `/repos/${st().repo}/contents/${enc}`;
+  const send = s => gh(url, { method: 'DELETE', body: JSON.stringify({ message: `Delete ${path.split('/').pop()}`, sha: s }) });
+  let s = sha;
+  if (!s) { const cur = await gh(url); if (cur.status === 404) return; s = cur.body.sha; }
+  let res = await send(s);
+  if (res.status === 409 || res.status === 422) {
+    const cur = await gh(url);
+    if (cur.status === 404) return;
+    if (cur.ok && cur.body.sha) res = await send(cur.body.sha);
+  }
+  if (res.status === 404) return; // already gone
+  if (!res.ok) { const e = new Error(res.body.message || 'HTTP ' + res.status); e.status = res.status; throw e; }
+}
+
 async function uploadSession(sess) {
   const base = sess.syncPath || (sess.syncPath = reportPath(sess));
   const msg = `Workout ${sess.start.slice(0, 10)} ${sess.dayId}`;
@@ -60,19 +76,32 @@ export const sync = {
   setRepo(v) { st().repo = (v || '').trim().replace(/^https?:\/\/github\.com\//, '').replace(/\.git$/, '').replace(/\/$/, '') || DEFAULT_REPO; save(); },
   enabled() { return !!(this.token() && st().repo); },
   state: st,
-  pending: () => st().queue.length,
+  pending: () => st().queue.length + st().deletes.length,
   onChange(fn) { onChange = fn; },
   enqueue(id) { const q = st().queue; if (!q.includes(id)) q.push(id); save(); },
+  // Forget a deleted workout: drop it from the upload queue and remove its files from GitHub if they were uploaded.
+  remove(sess) {
+    const s = st();
+    s.queue = s.queue.filter(id => id !== sess.id);
+    if (sess.syncedAt && sess.syncPath) s.deletes.push({ path: sess.syncPath, md: sess.syncSha?.md || null, json: sess.syncSha?.json || null });
+    save();
+  },
   enqueueAll() { for (const s of store.s.sessions) if (!s.syncedAt) this.enqueue(s.id); },
 
   // Upload everything waiting. Stops at the first failure and keeps the rest for later.
   flush() {
     if (busy) return busy;
-    if (!this.enabled() || !st().queue.length) return Promise.resolve();
+    if (!this.enabled() || (!st().queue.length && !st().deletes.length)) return Promise.resolve();
     if (typeof navigator !== 'undefined' && navigator.onLine === false) return Promise.resolve();
     busy = (async () => {
       const s = st();
       try {
+        while (s.deletes.length) {
+          const d = s.deletes[0];
+          await deleteFile(d.path + '.md', d.md);
+          await deleteFile(d.path + '.json', d.json);
+          s.deletes.shift(); save();
+        }
         while (s.queue.length) {
           const id = s.queue[0];
           const sess = store.s.sessions.find(x => x.id === id);

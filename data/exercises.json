@@ -1237,6 +1237,7 @@
   },
   {
    "id": "side_plank",
+   "timed": true,
    "sourceName": "Plancha lateral",
    "name": {
     "en": "Side plank",
@@ -2886,6 +2887,7 @@
   },
   {
    "id": "lunge_front_lateral_plate_press",
+   "sideMode": "alt",
    "sourceName": "Estocada frontal y lateral + empuje frontal disco",
    "name": {
     "en": "Forward and lateral lunge with plate press",
@@ -4487,6 +4489,8 @@
   },
   {
    "id": "adductor_squeeze_3pos",
+   "segments": 3,
+   "timed": true,
    "sourceName": "Aductores en tres posiciones (apretando pelota chica)",
    "name": {
     "en": "Adductor ball squeeze, 3 positions",
@@ -5798,6 +5802,7 @@
   },
   {
    "id": "wall_sit_plate",
+   "timed": true,
    "sourceName": "(home alternative) Sentadilla isométrica en la pared con disco",
    "name": {
     "en": "Wall sit, plate held forward",
@@ -6013,6 +6018,8 @@
   },
   {
    "id": "adductor_squeeze_mat",
+   "segments": 3,
+   "timed": true,
    "sourceName": "(home alternative) Aductores apretando la colchoneta enrollada, 3 posiciones",
    "name": {
     "en": "Adductor squeeze with rolled mat, 3 positions",

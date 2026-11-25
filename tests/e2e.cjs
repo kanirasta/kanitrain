@@ -391,6 +391,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     const m = url.pathname.match(/^\/repos\/kanirasta\/kanitrain-logs\/contents\/(.+)$/);
     if (!m) return r.fulfill({ status: 404, body: '{}' });
     const fp = decodeURIComponent(m[1]);
+    if (req.method() === 'DELETE') { const b = JSON.parse(req.postData()); if (!ghFiles[fp]) return r.fulfill({ status: 404, body: '{}' }); if (b.sha !== ghFiles[fp].sha) return r.fulfill({ status: 409, body: '{}' }); delete ghFiles[fp]; return r.fulfill({ status: 200, contentType: 'application/json', body: '{}' }); }
     if (req.method() === 'GET') return ghFiles[fp] ? r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ sha: ghFiles[fp].sha }) }) : r.fulfill({ status: 404, body: '{}' });
     const b = JSON.parse(req.postData());
     if (ghFiles[fp] && b.sha !== ghFiles[fp].sha) return r.fulfill({ status: 422, contentType: 'application/json', body: '{"message":"sha wasn\'t supplied"}' });
@@ -443,6 +444,73 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     assert(await p.isVisible('.update-bar'), 'no banner');
     assert((await p.textContent('.update-bar')).includes('Tap to reload'), 'banner text');
     await p.evaluate(() => { window.__app.ui.updateReady = false; window.__app.render(); });
+  });
+
+  // ---------- holds, delete, discard, zoom ----------
+  await test('holds: the wall sit home swap runs as 30 s on / 30 s break instead of reps', async () => {
+    const r = await p.evaluate(async () => {
+      const m = await import('./js/plan.js');
+      const st = m.buildSteps(m.dayById('w2-mon'), 'home').filter(s => s.exId === 'wall_sit_plate');
+      const gym = m.buildSteps(m.dayById('w2-mon'), 'gym').filter(s => s.exId === 'ball_wall_squat_plate');
+      const sp = m.buildSteps(m.dayById('w1-fri'), 'gym').filter(s => s.exId === 'side_plank');
+      return { st, gym, sp };
+    });
+    assert(r.st.length === 4 && r.st.every(s => s.durationSec === 30 && s.timed && s.restAfter >= 30), JSON.stringify(r.st[0]));
+    assert(r.gym.every(s => !s.durationSec && s.reps === 8), 'gym version should stay reps');
+    assert(r.sp[0].side === 'left' && r.sp[0].durationSec === 20 && r.sp[0].restAfter <= 10 && r.sp[1].restAfter >= 30, 'side plank: ' + JSON.stringify(r.sp.slice(0, 2).map(s => [s.side, s.durationSec, s.restAfter])));
+  });
+  await test('holds: adjust on and break during a workout, remembered next time', async () => {
+    await p.evaluate(() => window.__app.store.setSetting('location', 'home'));
+    await tap('[data-a=go][data-to=home]'); await tap('[data-a=days]'); await tap('.day-row[data-day=w2-mon]');
+    assert((await p.textContent('.plan')).includes('4 × 30 s'), 'home preview should show the hold time');
+    await tap('[data-a=start]'); await p.waitForSelector('.workout');
+    await tap('[data-a=steps]');
+    const key = await p.evaluate(() => window.__app.store.s.active.order.find(k => k.startsWith('main:1:')));
+    await tap(`[data-a=jump][data-key="${key}"]`);
+    assert(await exists('.tmr-line'), 'no interval line');
+    assert((await p.textContent('.tmr-line')).includes('30 s on · 30 s break'), await p.textContent('.tmr-line'));
+    await tap('[data-a=tmr-edit]');
+    await tap('[data-a=tmr][data-k=work][data-d="5"]'); await tap('[data-a=tmr][data-k=rest][data-d="-5"]'); await tap('[data-a=tmr][data-k=rest][data-d="-5"]');
+    assert((await p.textContent('[data-timer]')).trim() === '0:35', 'timer not updated: ' + await p.textContent('[data-timer]'));
+    const tm = await p.evaluate(() => window.__app.store.s.timers.wall_sit_plate);
+    assert(tm.work === 35 && tm.rest === 20, JSON.stringify(tm));
+    await tap('[data-a=timer-start]'); await sleep(300); await tap('[data-a=done]');
+    assert(await exists('[data-a=skiprest]'), 'no break after the hold');
+    const left = await p.evaluate(() => (window.__app.store.s.active.restEnd - Date.now()) / 1000);
+    assert(left > 15 && left <= 20, 'break should be 20 s, got ' + left);
+  });
+  await test('discard: menu discards the workout without saving anything', async () => {
+    const n = await p.evaluate(() => window.__app.store.s.sessions.length);
+    await tap('[data-a=menu]'); await tap('#sheet [data-a=discard-wo]');
+    await p.waitForSelector('.home');
+    assert(await p.evaluate(() => !window.__app.store.s.active), 'still active');
+    assert(await p.evaluate(() => window.__app.store.s.sessions.length) === n, 'a session was saved');
+    await p.evaluate(() => window.__app.store.setSetting('location', 'gym'));
+  });
+  await test('discard: end screen discard drops the workout and sends nothing', async () => {
+    const n = await p.evaluate(() => window.__app.store.s.sessions.length);
+    const files = Object.keys(ghFiles).length;
+    await tap('[data-a=go][data-to=home]'); await tap('[data-a=start]'); await p.waitForSelector('.workout');
+    await tap('[data-a=menu]'); await tap('#sheet [data-a=finish]'); await p.waitForSelector('.summary');
+    assert(!(await exists('[data-a=sess-del]')), 'fresh workout should offer discard, not delete');
+    await tap('[data-a=sess-discard]'); await p.waitForSelector('.home'); await sleep(300);
+    assert(await p.evaluate(() => window.__app.store.s.sessions.length) === n, 'not discarded');
+    assert(Object.keys(ghFiles).length === files, 'something was uploaded');
+  });
+  await test('delete: a logged workout is deleted from History and from GitHub', async () => {
+    const n = await p.evaluate(() => window.__app.store.s.sessions.length);
+    const files = Object.keys(ghFiles).length;
+    await tap('[data-a=go][data-to=history]'); await tap('.history .day-row >> nth=0'); await p.waitForSelector('.summary');
+    const path = await p.evaluate(id => window.__app.store.s.sessions.find(s => s.id === id).syncPath, await p.evaluate(() => window.__app.ui.summaryId));
+    await tap('[data-a=sess-del]'); await p.waitForSelector('.history');
+    await p.waitForFunction(() => window.__app.store.s.sync.deletes.length === 0);
+    assert(await p.evaluate(() => window.__app.store.s.sessions.length) === n - 1, 'not deleted');
+    assert(Object.keys(ghFiles).length === files - 2 && !ghFiles[path + '.md'] && !ghFiles[path + '.json'], 'GitHub files not deleted');
+  });
+  await test('zoom: double-tap zoom is off', async () => {
+    const ta = await p.evaluate(() => [getComputedStyle(document.body).touchAction, getComputedStyle(document.querySelector('button')).touchAction]);
+    assert(ta.every(v => v === 'manipulation'), ta.join());
+    assert((await p.getAttribute('meta[name=viewport]', 'content')).includes('maximum-scale=1'), 'viewport');
   });
 
   await test('offline install: first visit does not reload the page under you', async () => {
@@ -627,6 +695,97 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     assert(await sheetOpen(), 'sheet closed without data');
     assert(await p.evaluate(() => window.__app.store.s.activities.length === 0), 'empty entry saved');
     await tap('#sheet .close');
+  });
+
+  // ---------- alternating sides, multi-position holds ----------
+  await test('sides: the lunge + plate press alternates sides by default, others stay one side then the other', async () => {
+    const r = await p.evaluate(async () => {
+      const m = await import('./js/plan.js');
+      const st = m.buildSteps(m.dayById('w2-mon'), 'gym');
+      return { lunge: st.filter(s => s.exId === 'lunge_front_lateral_plate_press'), split: st.filter(s => s.side === 'left').length };
+    });
+    assert(r.lunge.length === 3 && r.lunge.every(s => s.alt && s.repsL === 8 && s.repsR === 8 && !s.side), JSON.stringify(r.lunge[0]));
+    assert(r.split > 0, 'other unilateral work should still split');
+  });
+  await test('sides: alternating set logs left and right reps, with extra left reps', async () => {
+    await tap('[data-a=go][data-to=home]'); await tap('[data-a=days]'); await tap('.day-row[data-day=w2-mon]');
+    await tap('[data-a=start]'); await p.waitForSelector('.workout');
+    await tap('[data-a=steps]');
+    await tap('[data-a=jump][data-key="main:3:alt:1"]');
+    assert(await exists('.stepper.alt-side.left') && await exists('.stepper.alt-side.right'), 'no left/right steppers');
+    await tap('[data-a=reps][data-side=repsL][data-d="1"]'); await tap('[data-a=reps][data-side=repsL][data-d="1"]');
+    await tap('[data-a=reps][data-side=repsR][data-d="-1"]');
+    await tap('[data-a=done]');
+    await tap('[data-a=menu]'); await tap('#sheet [data-a=finish]'); await p.waitForSelector('.summary');
+    const s = await p.evaluate(() => window.__app.store.s.sessions.at(-1));
+    const L = s.sets.find(x => x.key === 'main:3:left:1'), R = s.sets.find(x => x.key === 'main:3:right:1');
+    assert(L && R && L.reps === 10 && L.target === 8 && R.reps === 7 && R.target === 8 && L.alternating, JSON.stringify([L, R]));
+    assert(s.skipped.some(x => x.key === 'main:3:left:2') && s.skipped.some(x => x.key === 'main:3:right:3'), 'alt skipped sets not split by side');
+    const md = await p.inputValue('textarea[data-sessnote]');
+    assert(/Left vs right: reps 10 vs 7/.test(md), 'report misses left vs right');
+    await tap('[data-a=sess-discard]'); await p.waitForSelector('.home');
+  });
+  await test('sides: switching to one side then the other in the exercise popup applies to the workout', async () => {
+    await tap('[data-a=days]'); await tap('.day-row[data-day=w2-mon]');
+    await tap('[data-a=start]'); await p.waitForSelector('.workout');
+    await tap('[data-a=steps]'); await tap('[data-a=jump][data-key="main:3:alt:1"]');
+    await tap('.wo-name'); await p.waitForSelector('.side-mode');
+    await tap('[data-a=side-mode][data-v=split]');
+    assert(await p.evaluate(() => window.__app.store.s.sideModes.lunge_front_lateral_plate_press === 'split'), 'not saved');
+    const a = await active();
+    assert(a.order.filter(k => k.startsWith('main:3:')).length === 6 && a.order[a.pos] === 'main:3:left:1', 'not rebuilt: ' + a.order[a.pos]);
+    await tap('#sheet .close');
+    assert(await exists('.side.left') && !(await exists('.stepper.alt-side')), 'screen not switched');
+    await tap('[data-a=menu]'); await tap('#sheet [data-a=discard-wo]'); await p.waitForSelector('.home');
+    await p.evaluate(() => { delete window.__app.store.s.sideModes.lunge_front_lateral_plate_press; });
+  });
+  await test('holds: adductor squeeze is 60 s with a cue at each of the 3 positions', async () => {
+    const r = await p.evaluate(async () => {
+      const m = await import('./js/plan.js');
+      return m.buildSteps(m.dayById('w3-fri'), 'gym').filter(s => s.exId === 'adductor_squeeze_3pos');
+    });
+    assert(r.length === 3 && r.every(s => s.durationSec === 60 && s.segments === 3), JSON.stringify(r[0]));
+    await tap('[data-a=days]'); await tap('.day-row[data-day=w3-fri]');
+    await tap('[data-a=start]'); await p.waitForSelector('.workout');
+    await tap('[data-a=steps]');
+    const key = await p.evaluate(() => window.__app.store.s.active.order.find(k => k.startsWith('main:0:')));
+    await tap(`[data-a=jump][data-key="${key}"]`);
+    assert((await p.textContent('[data-seg]')).includes('Position 1 of 3'), 'no position label');
+    await tap('[data-a=timer-start]');
+    await p.evaluate(() => { const a = window.__app.store.s.active; a.timer.endAt = Date.now() + 35000; });
+    await p.waitForFunction(() => /Position 2 of 3/.test(document.querySelector('[data-seg]')?.textContent || ''));
+    await tap('[data-a=menu]'); await tap('#sheet [data-a=discard-wo]'); await p.waitForSelector('.home');
+  });
+
+  // ---------- iPad and TV ----------
+  await test('layout: iPhone stays the phone layout', async () => {
+    const l = await p.evaluate(() => [document.documentElement.dataset.layout, document.documentElement.style.zoom]);
+    assert(l[0] === 'phone' && !l[1], l.join());
+  });
+  await test('layout: iPad Air gets the large layout, side by side in landscape, and TV mode', async () => {
+    const c = await browser.newContext({ ...pw.devices['iPad Pro 11'], viewport: { width: 820, height: 1180 }, screen: { width: 820, height: 1180 }, serviceWorkers: 'block' });
+    const q = await c.newPage(); q.on('pageerror', e => errors.push('iPad: ' + e.message)); q.on('dialog', d => d.accept());
+    await q.goto(base); await q.waitForSelector('.home');
+    const pt = await q.evaluate(() => [document.documentElement.dataset.layout, document.documentElement.dataset.orient, +document.documentElement.style.zoom, document.documentElement.scrollWidth <= innerWidth]);
+    assert(pt[0] === 'tablet' && pt[1] === 'portrait' && pt[2] > 1.2 && pt[3], 'portrait: ' + pt.join());
+    await q.setViewportSize({ width: 1180, height: 820 }); await sleep(200);
+    await q.tap('[data-a=start]'); await q.waitForSelector('.workout');
+    const ls = await q.evaluate(() => {
+      const body = document.querySelector('.wo-body').getBoundingClientRect(), ctrl = document.querySelector('.wo-ctrl').getBoundingClientRect(), name = document.querySelector('.wo-name').getBoundingClientRect();
+      return [document.documentElement.dataset.orient, ctrl.left > name.right - 5, ctrl.left > body.left + body.width / 3, document.documentElement.scrollWidth <= innerWidth];
+    });
+    assert(ls[0] === 'landscape' && ls[1] && ls[2] && ls[3], 'landscape not side by side: ' + ls.join());
+    await q.evaluate(() => { window.__app.store.setSetting('tv', 'auto'); window.dispatchEvent(new Event('resize')); });
+    const tv = await q.evaluate(() => [document.documentElement.hasAttribute('data-tv'), getComputedStyle(document.body).backgroundColor]);
+    assert(tv[0] && tv[1] === 'rgb(0, 0, 0)', 'TV mode: ' + tv.join());
+    await q.setViewportSize({ width: 820, height: 1180 }); await sleep(200);
+    assert(!(await q.evaluate(() => document.documentElement.hasAttribute('data-tv'))), 'TV auto should turn off in portrait');
+    await q.evaluate(() => { window.__app.store.setActive(null); window.__app.ui.screen = 'settings'; window.__app.render(); });
+    await q.tap('[data-a=set][data-k=tv][data-v=on]');
+    assert(await q.evaluate(() => document.documentElement.hasAttribute('data-tv')), 'TV on toggle');
+    await q.tap('[data-a=set][data-k=display][data-v=phone]');
+    assert(await q.evaluate(() => document.documentElement.dataset.layout === 'phone'), 'manual phone layout');
+    await c.close();
   });
 
   await test('no JavaScript errors during the run', async () => {
