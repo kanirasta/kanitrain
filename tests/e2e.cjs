@@ -284,13 +284,14 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     await p.waitForSelector('.summary');
     assert((await p.textContent('.stats')).includes('/'), 'no sets stat');
   });
-  await test('summary: session notes save, then back to Today', async () => {
-    await p.fill('textarea[data-sessnote]', 'Felt good');
-    await p.dispatchEvent('textarea[data-sessnote]', 'change');
-    await tap('.start-bar [data-a=go]');
+  await test('summary: report is in the notes box, edits and notes save, then back to Today', async () => {
+    const txt = await p.inputValue('textarea[data-sessnote]');
+    assert(txt.includes('# Workout report') && txt.includes('## Exercises') && txt.includes('## My notes'), 'no report: ' + txt.slice(0, 80));
+    await p.fill('textarea[data-sessnote]', txt.replace('\n- \n', '\n- Felt good\n'));
+    await tap('.start-bar [data-a=sess-save]');
     await p.waitForSelector('.home');
     const s = await p.evaluate(() => window.__app.store.s.sessions);
-    assert(s.length === 1 && s[0].notes === 'Felt good', 'notes not saved');
+    assert(s.length === 1 && s[0].notes === '- Felt good' && s[0].report.includes('- Felt good\n'), 'notes not saved: ' + JSON.stringify(s[0].notes));
   });
   await test('full workout: Done through every set ends in a summary', async () => {
     await tap('[data-a=days]'); await tap('.day-row[data-day=w1-fri]');
@@ -299,13 +300,13 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     assert(ok, 'never reached summary');
     const s = await p.evaluate(() => window.__app.store.s.sessions.at(-1));
     assert(s.sets.length === s.totalSteps, `${s.sets.length}/${s.totalSteps} sets logged`);
-    await tap('.start-bar [data-a=go]');
+    await tap('.start-bar [data-a=sess-save]');
   });
   await test('history: lists workouts and opens a summary', async () => {
     await tap('[data-a=go][data-to=history]');
     assert((await p.$$('.history .day-row')).length === 2, 'expected 2 workouts');
     await tap('.history .day-row >> nth=0'); await p.waitForSelector('.summary');
-    await tap('.start-bar [data-a=go]');
+    await tap('.start-bar [data-a=sess-save]');
   });
 
   // ---------- settings ----------
@@ -337,6 +338,111 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     await p.setInputFiles('input[data-import]', backup);
     await sleep(200);
     assert((await p.evaluate(() => window.__app.store.s.sessions.length)) === 2, 'sessions not restored');
+  });
+
+  // ---------- workout report ----------
+  await test('report: logs set times, rests, Back, Skip and sets not done', async () => {
+    await tap('[data-a=go][data-to=home]'); await tap('[data-a=days]'); await tap('.day-row[data-day=w1-mon]');
+    await tap('[data-a=start]'); await p.waitForSelector('.workout');
+    // Get to the first rep-based set, then: Done, wait in rest, skip rest, Back, Done again, Skip the exercise, finish.
+    // Done until the first set that has a rest after it (rep-based), then Back to redo it.
+    for (let i = 0; i < 60 && !(await exists('[data-a=skiprest]')); i++) await tap('[data-a=done]');
+    assert(await exists('[data-a=skiprest]'), 'expected a rest');
+    await tap('[data-a=skiprest]'); await tap('[data-a=back]');
+    assert(await exists('[data-a=reps]'), 'redo set is not rep-based');
+    await sleep(1100); await tap('[data-a=reps][data-d="-1"]'); await tap('[data-a=done]');
+    await sleep(1100); await tap('[data-a=skiprest]');
+    const skippedEx = await p.evaluate(() => { const a = window.__app.store.s.active; return a.order[a.pos]; });
+    await tap('[data-a=skip]');
+    await tap('[data-a=menu]'); await tap('#sheet [data-a=finish]'); await p.waitForSelector('.summary');
+    const s = await p.evaluate(() => window.__app.store.s.sessions.at(-1));
+    const timed = s.sets.filter(x => x.workSec != null);
+    assert(timed.length === s.sets.length, 'sets without time');
+    assert(s.sets.some(x => x.workSec >= 1), 'no work time');
+    assert(s.sets.some(x => x.restSec != null && x.restTargetSec), 'no rest logged');
+    assert(s.sets.some(x => x.redone === 1 && x.reps === x.target - 1), 'Back redo or lower reps not logged');
+    assert(s.skipped.length === s.totalSteps - s.sets.length && s.skipped.some(x => x.key === skippedEx), 'skipped sets not logged');
+    assert(s.events.some(e => e.type === 'skip') && s.events.some(e => e.type === 'back'), 'events missing');
+    const md = s.report;
+    assert(md.includes('## To tune') && md.includes('Below target') && md.includes('Skipped') && md.includes('not done'), 'report misses tuning info');
+    assert(/time \d+:\d\d/.test(md) && /rest \d+:\d\d \(plan/.test(md), 'report misses times');
+  });
+  await test('report: RPE buttons fill the effort line, and JSON has the details', async () => {
+    await tap('[data-a=rpe][data-v="7"]');
+    assert((await p.inputValue('textarea[data-sessnote]')).includes('Effort (RPE 1-10): 7'), 'RPE line not set');
+    const j = await p.evaluate(async () => { const m = await import('./js/report.js'); return m.buildJSON(window.__app.store.s.sessions.at(-1)); });
+    assert(j.rpe === 7 && j.exercises.length > 3 && j.exercises.some(e => e.sets.some(x => x.done && x.workSec != null)) && j.exercises.some(e => e.sets.some(x => !x.done)), 'JSON incomplete');
+  });
+  await test('report: Spanish report with notes section', async () => {
+    const md = await p.evaluate(async () => { const i = await import('./js/i18n.js'); const m = await import('./js/report.js'); i.setLang('es'); const r = m.buildReport(window.__app.store.s.sessions.at(-1)); i.setLang('en'); return r; });
+    assert(md.includes('# Informe del entrenamiento') && md.includes('## Mis notas') && md.includes('Semana 1'), md.slice(0, 120));
+    const parsed = await p.evaluate(async md => (await import('./js/report.js')).parseReport(md), md.replace('\n- \n', '\n- Rodilla izquierda molesta\n').replace('- Dolor o molestia: ', '- Dolor o molestia: rodilla'));
+    assert(parsed.painNote === 'rodilla' && parsed.notes.includes('Rodilla izquierda molesta'), JSON.stringify(parsed));
+  });
+
+  // ---------- GitHub upload ----------
+  const ghFiles = {}; let ghDown = false; const ghCalls = [];
+  await p.route(/api\.github\.com/, async r => {
+    const req = r.request(); const url = new URL(req.url()); ghCalls.push(req.method() + ' ' + url.pathname);
+    if (ghDown) return r.abort('internetdisconnected');
+    const auth = req.headers()['authorization'];
+    if (auth !== 'Bearer github_pat_test') return r.fulfill({ status: 401, contentType: 'application/json', body: '{"message":"Bad credentials"}' });
+    if (url.pathname === '/repos/kanirasta/kanitrain-logs') return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ private: true, permissions: { push: true } }) });
+    const m = url.pathname.match(/^\/repos\/kanirasta\/kanitrain-logs\/contents\/(.+)$/);
+    if (!m) return r.fulfill({ status: 404, body: '{}' });
+    const fp = decodeURIComponent(m[1]);
+    if (req.method() === 'GET') return ghFiles[fp] ? r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ sha: ghFiles[fp].sha }) }) : r.fulfill({ status: 404, body: '{}' });
+    const b = JSON.parse(req.postData());
+    if (ghFiles[fp] && b.sha !== ghFiles[fp].sha) return r.fulfill({ status: 422, contentType: 'application/json', body: '{"message":"sha wasn\'t supplied"}' });
+    const sha = 'sha' + Math.random().toString(36).slice(2);
+    ghFiles[fp] = { sha, text: Buffer.from(b.content, 'base64').toString('utf8') };
+    return r.fulfill({ status: ghFiles[fp] ? 200 : 201, contentType: 'application/json', body: JSON.stringify({ content: { sha } }) });
+  });
+  await test('sync: a wrong token is reported, the right one connects and uploads past workouts', async () => {
+    await tap('.start-bar [data-a=sess-save]'); await p.waitForSelector('.home');
+    await tap('[data-a=go][data-to=settings]');
+    await p.fill('[data-synctoken]', 'nope'); await tap('[data-a=sync-save]');
+    await p.waitForFunction(() => /rejected/.test(document.querySelector('.sync-test')?.textContent || ''));
+    await p.fill('[data-synctoken]', 'github_pat_test'); await tap('[data-a=sync-save]');
+    await p.waitForSelector('.sync-test.good');
+    await p.waitForFunction(() => window.__app.store.s.sync.queue.length === 0);
+    const n = await p.evaluate(() => window.__app.store.s.sessions.length);
+    const mds = Object.keys(ghFiles).filter(f => f.endsWith('.md'));
+    assert(mds.length === n && Object.keys(ghFiles).length === 2 * n, `uploaded ${Object.keys(ghFiles).length} files for ${n} workouts`);
+    assert(mds.every(f => /^workouts\/\d{4}\/\d{4}-\d\d-\d\d-\d{6}-w\d-\w+\.md$/.test(f)), mds.join(','));
+    const exported = await p.evaluate(() => window.__app.store.exportJSON());
+    assert(!exported.includes('github_pat_test'), 'token leaked into the backup');
+  });
+  await test('sync: an edited report uploads again over the same file', async () => {
+    await tap('[data-a=go][data-to=history]'); await tap('.history .day-row >> nth=0'); await p.waitForSelector('.summary');
+    assert((await p.textContent('.sync-line')).includes('Uploaded to GitHub'), 'no uploaded status');
+    const txt = await p.inputValue('textarea[data-sessnote]');
+    await p.fill('textarea[data-sessnote]', txt.replace('## My notes', '## My notes\nEdited later'));
+    await tap('.start-bar [data-a=sess-save]'); await p.waitForSelector('.history');
+    await p.waitForFunction(() => window.__app.store.s.sync.queue.length === 0);
+    const f = Object.keys(ghFiles).filter(f => f.endsWith('.md') && ghFiles[f].text.includes('Edited later'));
+    assert(f.length === 1, 'edit not uploaded');
+    const j = JSON.parse(ghFiles[f[0].replace(/\.md$/, '.json')].text);
+    assert(j.notes.includes('Edited later') && j.schema === 'kanitrain.session/1', 'JSON not updated');
+  });
+  await test('sync: offline keeps it queued and it uploads when back online', async () => {
+    ghDown = true;
+    const before = Object.keys(ghFiles).length;
+    await tap('[data-a=go][data-to=home]'); await tap('[data-a=start]'); await p.waitForSelector('.workout');
+    await tap('[data-a=menu]'); await tap('#sheet [data-a=finish]'); await p.waitForSelector('.summary');
+    await tap('.start-bar [data-a=sess-save]'); await p.waitForSelector('.home');
+    await sleep(300);
+    assert(await p.evaluate(() => window.__app.store.s.sync.queue.length === 1), 'not queued');
+    ghDown = false;
+    await p.evaluate(() => window.dispatchEvent(new Event('online')));
+    await p.waitForFunction(() => window.__app.store.s.sync.queue.length === 0);
+    assert(Object.keys(ghFiles).length === before + 2, 'not uploaded after reconnect: ' + Object.keys(ghFiles).join(' '));
+  });
+  await test('update: banner shows on Today and is tappable', async () => {
+    await p.evaluate(() => { window.__app.ui.updateReady = true; window.__app.render(); });
+    assert(await p.isVisible('.update-bar'), 'no banner');
+    assert((await p.textContent('.update-bar')).includes('Tap to reload'), 'banner text');
+    await p.evaluate(() => { window.__app.ui.updateReady = false; window.__app.render(); });
   });
 
   await test('offline install: first visit does not reload the page under you', async () => {
@@ -432,7 +538,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     const txt = await p.textContent('#sheet');
     assert(txt.includes('Goblet squat, slow tempo') && !txt.includes('Barbell back squat'), 'swap lost after resume');
     await tap('#sheet .close'); await tap('[data-a=menu]'); await tap('#sheet [data-a=finish]'); await p.waitForSelector('.summary');
-    await tap('.start-bar [data-a=go]');
+    await tap('.start-bar [data-a=sess-save]');
   });
   await test('every plan exercise has a home path or is flagged', async () => {
     const r = await p.evaluate(async () => {
@@ -481,7 +587,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     assert(await doneUntil(() => exists('.summary'), 200), 'never reached summary');
     const n = await p.evaluate(() => { const s = window.__app.store.s.sessions; return s[s.length - 1].sets.filter(x => x.exId.startsWith('calf_raise')).length; });
     assert(n === 10, 'calf sets logged ' + n);
-    await tap('.start-bar [data-a=go]');
+    await tap('.start-bar [data-a=sess-save]');
   });
 
   // ---------- runs and swims ----------

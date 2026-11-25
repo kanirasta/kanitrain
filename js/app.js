@@ -6,9 +6,11 @@ import {
   suggestedDay, isLowerUnilateral, lastSessionFor, resolveItem, homeReport, equipmentNeeded,
 } from './plan.js';
 import { mountVideo } from './video.js';
+import { buildReport, parseReport, setReportRPE, keepNotes } from './report.js';
+import { sync } from './sync.js';
 import { unlockAudio, sound, buzz, keepAwake, isStandalone, isIOS } from './device.js';
 
-export const BUILD = '2026-11-24d';
+export const BUILD = '2026-11-25a';
 const $app = document.getElementById('app');
 const $sheet = document.getElementById('sheet');
 
@@ -68,7 +70,10 @@ function render() {
   else if (s === 'summary') html = renderSummary();
   else if (s === 'history') html = renderHistory();
   else if (s === 'settings') html = renderSettings();
-  if (['home', 'history', 'settings'].includes(s)) html += renderTabs();
+  if (['home', 'history', 'settings'].includes(s)) {
+    if (ui.updateReady) html = `<button class="update-bar" data-a="reload">${t('updateReady')}</button>` + html;
+    html += renderTabs();
+  }
   if (ui.toast) html += `<div class="toast">${esc(ui.toast)}</div>`;
   $app.innerHTML = html;
   if ($app.dataset.screen !== s) window.scrollTo(0, 0);
@@ -242,8 +247,8 @@ function startWorkout() {
   loadSteps(day.id, location);
   store.setActive({
     id: 's' + Date.now(), dayId: day.id, start: new Date().toISOString(),
-    location, order: steps.map(s => s.key), pos: 0, done: {}, phase: 'work', restEnd: null, restTotal: 0,
-    timer: null,
+    location, order: steps.map(s => s.key), plan: steps.map(s => s.key), pos: 0, done: {}, phase: 'work', restEnd: null, restTotal: 0,
+    timer: null, workAt: Date.now(), rest: null, redos: {}, events: [],
   });
   ui.draft = null;
   ui.screen = 'workout';
@@ -257,12 +262,24 @@ function resumeWorkout() {
   const a = store.s.active;
   loadSteps(a.dayId, a.location || 'gym');
   a.order = a.order.filter(k => stepMap[k]);
+  logEvent('resume');
+  store.setActive(a);
   ui.screen = 'workout';
   keepAwake(true);
   render();
 }
 
 const A = () => store.s.active;
+// Timing for the report: when the current set started, and the rest after each set.
+function logEvent(type, extra = {}) { const a = A(); (a.events ||= []).push({ type, at: new Date().toISOString(), ...extra }); }
+function endRest(at = Date.now()) {
+  const a = A();
+  if (a.rest && a.done[a.rest.key]) {
+    a.done[a.rest.key].restSec = Math.max(0, Math.round((at - a.rest.start) / 1000));
+    a.done[a.rest.key].restTargetSec = a.restTotal;
+  }
+  a.rest = null; a.phase = 'work'; a.restEnd = null; a.workAt = at;
+}
 const cur = () => stepMap[A().order[A().pos]];
 function nextKeyAfter(pos) { const a = A(); for (let i = pos + 1; i < a.order.length; i++) if (!a.done[a.order[i]]) return a.order[i]; return null; }
 
@@ -290,9 +307,18 @@ function completeStep(extra = {}) {
   const step = cur();
   if (!step) return;
   const d = draftFor(step);
+  const now = Date.now();
+  const tm = a.timer;
+  let timerSec = null;
+  if (step.durationSec && tm) timerSec = Math.round(step.durationSec - Math.max(0, tm.running ? (tm.endAt - now) / 1000 : tm.remaining));
   a.done[step.key] = {
     reps: step.durationSec ? null : d.reps, weight: step.weighted ? d.weight : null,
-    durationSec: step.durationSec || null, at: new Date().toISOString(), ...extra,
+    durationSec: step.durationSec || null, at: new Date(now).toISOString(),
+    target: step.durationSec ? null : (step.reps ?? null), swapFrom: step.swapFrom || null,
+    workSec: a.workAt ? Math.round((now - a.workAt) / 1000) : null,
+    ...(step.durationSec ? { timerSec, pauses: (tm && tm.pauses) || 0 } : {}),
+    ...(a.redos && a.redos[step.key] ? { redone: a.redos[step.key] } : {}),
+    ...extra,
   };
   a.timer = null;
   ui.draft = null; a.draft = null;
@@ -302,8 +328,8 @@ function completeStep(extra = {}) {
   a.pos = p;
   if (p >= a.order.length) { store.setActive(a); finishWorkout(); return; }
   const rest = step.restAfter || 0;
-  if (rest > 0) { a.phase = 'rest'; a.restTotal = rest; a.restEnd = Date.now() + rest * 1000; }
-  else a.phase = 'work';
+  if (rest > 0) { a.phase = 'rest'; a.restTotal = rest; a.restEnd = now + rest * 1000; a.rest = { key: step.key, start: now }; }
+  else { a.phase = 'work'; a.workAt = now; }
   store.setActive(a);
   sound.tap();
   render();
@@ -311,7 +337,8 @@ function completeStep(extra = {}) {
 
 function goBack() {
   const a = A();
-  if (a.phase === 'rest') { a.phase = 'work'; a.restEnd = null; }
+  if (a.phase === 'rest') { a.phase = 'work'; a.restEnd = null; a.rest = null; }
+  a.workAt = Date.now();
   // previous step in order that is done
   let p = a.pos - 1;
   while (p >= 0 && !a.done[a.order[p]]) p--;
@@ -319,6 +346,8 @@ function goBack() {
   const key = a.order[p];
   const prev = a.done[key];
   delete a.done[key];
+  (a.redos ||= {})[key] = (a.redos[key] || 0) + 1;
+  logEvent('back', { key, exId: stepMap[key].exId });
   a.pos = p;
   a.timer = null;
   ui.draft = a.draft = { key, reps: prev.reps ?? stepMap[key].reps, weight: prev.weight };
@@ -337,7 +366,8 @@ function skipExercise() {
   const keep = rest.filter(k => !moved.includes(k));
   if (!keep.some(k => !a.done[k])) { showToast(t('skipHint')); return; }
   a.order = [...before, ...keep, ...moved];
-  a.phase = 'work'; a.timer = null; ui.draft = null;
+  logEvent('skip', { key: step.key, exId: step.exId, sets: moved.length });
+  a.phase = 'work'; a.timer = null; ui.draft = null; a.workAt = Date.now();
   store.setActive(a);
   ui.sheet = null;
   render();
@@ -348,7 +378,9 @@ function jumpTo(key) {
   if (a.done[key]) return;
   a.order = a.order.filter(k => k !== key);
   a.order.splice(a.pos, 0, key);
-  a.phase = 'work'; a.timer = null; ui.draft = null;
+  if (a.phase === 'rest') endRest();
+  logEvent('jump', { key, exId: stepMap[key].exId });
+  a.phase = 'work'; a.timer = null; ui.draft = null; a.workAt = Date.now();
   store.setActive(a);
   ui.sheet = null;
   render();
@@ -356,21 +388,32 @@ function jumpTo(key) {
 
 function finishWorkout() {
   const a = A();
+  if (a.phase === 'rest') endRest();
+  logEvent('finish');
   const sets = a.order.filter(k => a.done[k]).map(k => {
     const s = stepMap[k]; const d = a.done[k];
     return { key: k, exId: s.exId, side: s.side, setNo: s.setNo, blockId: s.blockId, ...d };
   }).sort((x, y) => x.at.localeCompare(y.at));
   const total = a.order.length;
+  const skipped = (a.plan || a.order).filter(k => !a.done[k] && stepMap[k]).map(k => {
+    const s = stepMap[k];
+    return { key: k, exId: s.exId, side: s.side, setNo: s.setNo, blockId: s.blockId, target: s.reps ?? null, durationSec: s.durationSec || null, swapFrom: s.swapFrom || null };
+  });
+  const st = store.settings();
   const sess = {
     id: a.id, dayId: a.dayId, start: a.start, end: new Date().toISOString(),
     sets, totalSteps: total, partial: sets.length < total / 2, notes: '',
+    location: a.location || 'gym', plan: a.plan || a.order, skipped, events: a.events || [], rpe: null,
+    settings: { restStrength: st.restStrength, restCircuit: st.restCircuit, restSides: st.restSides, extraCalves: st.extraCalves, extraAnkles: st.extraAnkles, extraPogo: st.extraPogo },
   };
+  sess.report = buildReport(sess);
   store.addSession(sess);
   store.setActive(null);
   keepAwake(false);
   sound.end();
   checkWeekAdvance();
   ui.summaryId = sess.id;
+  ui.summaryFrom = 'home';
   ui.screen = 'summary';
   ui.dayId = null;
   render();
@@ -528,10 +571,8 @@ function renderSummary() {
     }
   }
   const skipped = sess.totalSteps - sess.sets.length;
-  const perEx = exIds.map(id => {
-    const sets = sess.sets.filter(s => s.exId === id);
-    return `<li><b>${esc(L(data.ex[id].name))}</b><span class="muted">${sets.map(s => `${s.side ? (s.side === 'left' ? 'L ' : 'R ') : ''}${s.weight ? +s.weight + '×' : ''}${s.reps ?? (s.durationSec ? s.durationSec + 's' : '')}`).join(', ')}</span></li>`;
-  }).join('');
+  if (sess.report == null) store.updateSession(sess.id, { report: buildReport(sess) });
+  const rpe = Array.from({ length: 10 }, (_, i) => i + 1).map(n => `<button class="${sess.rpe === n ? 'on' : ''}" data-a="rpe" data-id="${sess.id}" data-v="${n}">${n}</button>`).join('');
   return `<main class="summary">
     <header class="top"><div><p class="eyebrow">${fmtDate(sess.start)}</p><h1>${t('summary')}</h1><p class="muted">${esc(dayTitle(day))}</p></div></header>
     <div class="stats">
@@ -541,10 +582,45 @@ function renderSummary() {
     </div>
     ${incs.length ? `<section class="card"><h2>${t('increases')}</h2><ul class="plain">${incs.map(x => `<li>${esc(x)}</li>`).join('')}</ul></section>` : ''}
     ${skipped > 0 ? `<p class="muted">${t('skipped')}: ${skipped}</p>` : ''}
-    <section class="card"><ul class="sum-list">${perEx}</ul></section>
-    <section class="card"><h2>${t('sessionNotes')}</h2><textarea class="notes" data-sessnote="${sess.id}" placeholder="${t('sessionNotesPh')}">${esc(sess.notes || '')}</textarea></section>
-    <div class="start-bar"><button class="btn primary big" data-a="go" data-to="home">${t('save')}</button></div>
+    <section class="card"><h2>${t('rpeTitle')}</h2><p class="muted small">${t('rpeHint')}</p><div class="seg rpe">${rpe}</div></section>
+    <section class="card report"><h2>${t('sessionNotes')}</h2><p class="muted small">${t('reportHint')}</p>
+      <textarea class="notes report-text" data-sessnote="${sess.id}" spellcheck="false">${esc(store.s.sessions.find(s => s.id === sess.id).report || '')}</textarea>
+      <div class="row"><button class="btn ghost small" data-a="sess-share" data-id="${sess.id}">${t('share')}</button>
+        <button class="btn ghost small" data-a="sess-regen" data-id="${sess.id}">${t('regen')}</button></div>
+      <p class="muted small sync-line">${esc(syncLine(sess))}</p></section>
+    <div class="start-bar"><button class="btn primary big" data-a="sess-save" data-id="${sess.id}">${t('save')}</button></div>
   </main>`;
+}
+
+function syncLine(sess) {
+  if (!sync.enabled()) return t('syncOffLine');
+  const st = sync.state();
+  if (sess && sess.syncedAt && !st.queue.includes(sess.id)) return t('syncedAt', { when: new Date(sess.syncedAt).toLocaleString(getLang() === 'es' ? 'es-UY' : 'en-US', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' }) });
+  if (st.error) return t('syncErr_' + st.error);
+  return st.queue.length ? t('syncPending', { n: st.queue.length }) : '';
+}
+
+function saveSession(id) {
+  const sess = store.s.sessions.find(x => x.id === id);
+  const box = document.querySelector('textarea[data-sessnote]');
+  const md = box ? box.value : sess.report || '';
+  const parsed = parseReport(md);
+  store.updateSession(id, { report: md, notes: parsed.notes, sideNote: parsed.sideNote || '', painNote: parsed.painNote || '', rpe: parsed.rpe ?? sess.rpe ?? null });
+  if (sync.enabled()) { sync.enqueue(id); sync.flush(); }
+  ui.screen = ui.summaryFrom === 'history' ? 'history' : 'home';
+  window.scrollTo(0, 0);
+  render();
+  showToast(sync.enabled() ? (navigator.onLine === false ? t('savedOffline') : t('savedSyncing')) : t('saved'));
+}
+
+async function shareReport(id) {
+  const sess = store.s.sessions.find(x => x.id === id);
+  const box = document.querySelector('textarea[data-sessnote]');
+  const text = box ? box.value : sess.report || '';
+  if (navigator.share) {
+    try { await navigator.share({ text, title: t('sessionNotes') }); return; } catch (err) { if (err.name === 'AbortError') return; }
+  }
+  try { await navigator.clipboard.writeText(text); showToast(t('copied')); } catch { showToast(t('copyFailed')); }
 }
 
 // ---------- runs and swims ----------
@@ -602,6 +678,7 @@ function renderSettings() {
       <h3>${t('extraCalves')}</h3>${seg('extraCalves', [[true, t('on')], [false, t('off')]])}
       <h3>${t('extraAnkles')}</h3>${seg('extraAnkles', [[true, t('on')], [false, t('off')]])}
       <h3>${t('extraPogo')}</h3>${seg('extraPogo', [[true, t('on')], [false, t('off')]])}<p class="muted small">${t('extraPogoHint')}</p></section>
+    ${renderSyncCard()}
     <section class="card"><h2>${t('data')}</h2>
       <p class="muted small">${store.s.lastBackupAt ? t('lastBackup', { when: rel(store.s.lastBackupAt) }) : t('noBackup')}</p>
       <div class="row"><button class="btn primary" data-a="export">${t('exportData')}</button>
@@ -609,6 +686,18 @@ function renderSettings() {
       <button class="btn danger small" data-a="reset">${t('reset')}</button></section>
     <p class="muted tiny center">${t('version')} ${BUILD}</p>
   </main>`;
+}
+
+function renderSyncCard() {
+  const on = sync.enabled();
+  const st = sync.state();
+  const test = ui.syncTest ? `<p class="small sync-test ${ui.syncTest === 'ok' ? 'good' : ''}">${t('syncTest_' + ui.syncTest)}</p>` : '';
+  return `<section class="card sync-form"><h2>${t('syncTitle')}</h2><p class="muted small">${t('syncHint')}</p>
+    <label class="field">${t('syncRepo')}<input data-syncrepo type="text" autocapitalize="off" autocorrect="off" spellcheck="false" value="${esc(sync.repo())}"></label>
+    <label class="field">${t('syncToken')}<input data-synctoken type="password" autocomplete="off" placeholder="${on ? t('syncTokenSaved') : 'github_pat_...'}"></label>
+    <div class="row"><button class="btn primary small" data-a="sync-save">${t('syncConnect')}</button>
+      ${on ? `<button class="btn ghost small" data-a="sync-now">${t('syncNow')}</button><button class="btn ghost small" data-a="sync-off">${t('syncDisconnect')}</button>` : ''}</div>
+    ${test}<p class="muted small">${esc(on ? syncLine(null) || (st.lastOkAt ? t('syncLastOk', { when: rel(st.lastOkAt) }) : '') : t('syncOffLine'))}</p></section>`;
 }
 
 function renderEquipmentCard() {
@@ -652,8 +741,8 @@ document.addEventListener('click', async e => {
     case 'discard': if (confirm(t('discard') + '?')) { store.setActive(null); } break;
     case 'done': unlockAudio(); completeStep(); return;
     case 'back': goBack(); return;
-    case 'skip': if (A().phase !== 'work') { A().phase = 'work'; } skipExercise(); return;
-    case 'skiprest': A().phase = 'work'; A().restEnd = null; store.setActive(A()); break;
+    case 'skip': if (A().phase !== 'work') endRest(); skipExercise(); return;
+    case 'skiprest': endRest(); store.setActive(A()); break;
     case 'rest-add': A().restEnd += (+el.dataset.d) * 1000; A().restTotal = Math.max(A().restTotal + (+el.dataset.d), 1); store.setActive(A()); break;
     case 'reps': { const d = draftFor(cur()); d.reps = Math.max(0, (d.reps || 0) + (+el.dataset.d)); A().draft = d; store.setActive(A()); break; }
     case 'weight': { const d = draftFor(cur()); const stp = store.settings().weightStep; d.weight = Math.max(0, Math.round(((+d.weight || 0) + (+el.dataset.d) * stp) * 100) / 100); A().draft = d; store.setActive(A()); break; }
@@ -667,16 +756,46 @@ document.addEventListener('click', async e => {
       unlockAudio();
       const step = cur(); const tm = A().timer;
       const remaining = tm ? tm.remaining : step.durationSec;
-      A().timer = { running: true, endAt: Date.now() + remaining * 1000, remaining, lastBeep: null };
+      A().timer = { running: true, endAt: Date.now() + remaining * 1000, remaining, lastBeep: null, pauses: tm ? tm.pauses || 0 : 0 };
       store.setActive(A());
       break;
     }
-    case 'timer-pause': { const tm = A().timer; tm.remaining = Math.max(0, (tm.endAt - Date.now()) / 1000); tm.running = false; store.setActive(A()); break; }
+    case 'timer-pause': { const tm = A().timer; tm.remaining = Math.max(0, (tm.endAt - Date.now()) / 1000); tm.running = false; tm.pauses = (tm.pauses || 0) + 1; store.setActive(A()); break; }
     case 'menu': ui.sheet = { type: 'menu' }; break;
     case 'steps': ui.sheet = { type: 'steps' }; break;
     case 'jump': jumpTo(el.dataset.key); return;
     case 'finish': if (confirm(t('finishConfirm'))) { ui.sheet = null; finishWorkout(); } return;
-    case 'open-sess': ui.summaryId = el.dataset.id; ui.screen = 'summary'; window.scrollTo(0, 0); break;
+    case 'open-sess': ui.summaryId = el.dataset.id; ui.summaryFrom = 'history'; ui.screen = 'summary'; window.scrollTo(0, 0); break;
+    case 'rpe': {
+      const sess = store.s.sessions.find(x => x.id === el.dataset.id);
+      const v = +el.dataset.v === sess.rpe ? null : +el.dataset.v;
+      const box = document.querySelector('textarea[data-sessnote]');
+      const md = setReportRPE(box ? box.value : sess.report, v);
+      store.updateSession(sess.id, { rpe: v, report: md });
+      break;
+    }
+    case 'sess-save': saveSession(el.dataset.id); return;
+    case 'sess-share': await shareReport(el.dataset.id); return;
+    case 'sess-regen': {
+      const sess = store.s.sessions.find(x => x.id === el.dataset.id);
+      if (!confirm(t('regenConfirm'))) return;
+      const box = document.querySelector('textarea[data-sessnote]');
+      store.updateSession(sess.id, { report: keepNotes(box ? box.value : sess.report || '', buildReport(sess)) });
+      break;
+    }
+    case 'sync-save': {
+      const f = el.closest('.sync-form');
+      sync.setRepo(f.querySelector('[data-syncrepo]').value);
+      const tok = f.querySelector('[data-synctoken]').value.trim();
+      if (tok) sync.setToken(tok);
+      ui.syncTest = 'testing'; render();
+      ui.syncTest = await sync.test();
+      if (ui.syncTest === 'ok' || ui.syncTest === 'public') { sync.enqueueAll(); sync.flush(); }
+      break;
+    }
+    case 'sync-off': if (confirm(t('syncOffConfirm'))) { sync.setToken(''); ui.syncTest = null; } break;
+    case 'sync-now': sync.enqueueAll(); sync.flush(); showToast(t('syncing')); return;
+    case 'reload': location.reload(); return;
     case 'eq-add': ui.eqEdit = { id: null }; break;
     case 'eq-edit': ui.eqEdit = { id: el.dataset.id }; break;
     case 'eq-cancel': ui.eqEdit = null; break;
@@ -722,10 +841,16 @@ document.addEventListener('click', async e => {
   render();
 });
 
+// Keep report edits even if the app is closed before Save.
+document.addEventListener('input', e => {
+  const el = e.target;
+  if (el.dataset && el.dataset.sessnote) store.updateSession(el.dataset.sessnote, { report: el.value });
+});
+
 document.addEventListener('change', async e => {
   const el = e.target;
   if (el.dataset.note) store.setNote(el.dataset.note, el.value.trim());
-  if (el.dataset.sessnote) store.updateSession(el.dataset.sessnote, { notes: el.value });
+  if (el.dataset.sessnote) store.updateSession(el.dataset.sessnote, { report: el.value });
   if (el.hasAttribute('data-import') && el.files[0]) {
     try { store.importJSON(await el.files[0].text()); setLang(store.settings().lang); showToast(t('importOk')); }
     catch { showToast(t('importBad')); }
@@ -757,7 +882,7 @@ setInterval(() => {
     const r = document.querySelector('[data-rest]');
     if (r) { r.textContent = fmtClock(left); r.parentElement.style.setProperty('--p', Math.max(0, left / a.restTotal)); }
     beepCountdown(a, left, 'rest');
-    if (left <= 0) { a.phase = 'work'; a.restEnd = null; store.setActive(a); sound.end(); buzz([200, 100, 200]); render(); }
+    if (left <= 0) { endRest(Math.min(a.restEnd, Date.now())); store.setActive(a); sound.end(); buzz([200, 100, 200]); render(); }
   } else if (a.timer && a.timer.running) {
     const step = cur();
     const left = (a.timer.endAt - Date.now()) / 1000;
@@ -792,8 +917,13 @@ window.addEventListener('resize', resetViewport);
 document.addEventListener('webkitfullscreenchange', resetViewport);
 
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible' && ui.screen === 'workout') { keepAwake(true); render(); }
+  if (document.visibilityState !== 'visible') return;
+  if (ui.screen === 'workout') { keepAwake(true); render(); }
+  sync.flush();
+  if (swReg) swReg.update().catch(() => {});
 });
+window.addEventListener('online', () => sync.flush());
+let swReg = null;
 
 // ---------- icons ----------
 const ICON = {
@@ -815,18 +945,23 @@ const ICON = {
   catch (err) { $app.innerHTML = `<p class="pad">Could not load plan data. ${esc(err.message)}</p>`; return; }
   if (store.s.active && !dayById(store.s.active.dayId)) store.setActive(null);
   render();
+  sync.onChange(() => { if (['settings', 'summary', 'history'].includes(ui.screen) && !document.activeElement?.matches('textarea, input')) render(); });
+  sync.flush();
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-    navigator.serviceWorker.register('sw.js').then(reg => reg.update()).catch(() => {});
-    // When a new version takes over, reload once so you are on it right away (not mid-workout).
-    // Only when replacing an older version: the very first install must not reload the page.
+    navigator.serviceWorker.register('sw.js').then(reg => { swReg = reg; return reg.update(); }).catch(() => {});
+    // A new version took over. Right after opening the app on Today, just reload.
+    // Later (or mid-workout, or with a popup open) show a banner and let you tap to reload.
+    // The very first install must not reload or show anything.
     const hadController = !!navigator.serviceWorker.controller;
-    let reloaded = false;
+    const bootAt = Date.now();
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (!hadController || reloaded || ui.screen === 'workout' || ui.sheet) return;
-      reloaded = true; location.reload();
+      if (!hadController || ui.updateReady) return;
+      if (Date.now() - bootAt < 15000 && ui.screen === 'home' && !ui.sheet && !store.s.active) { location.reload(); return; }
+      ui.updateReady = true;
+      if (ui.screen !== 'workout' && !document.activeElement?.matches('textarea, input')) render();
     });
   }
 })();
 
 // Exposed for tests.
-window.__app = { ui, store, render, data };
+window.__app = { ui, store, render, data, sync };
