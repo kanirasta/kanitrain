@@ -29,6 +29,8 @@ const DEFAULTS = {
     extraCalves: true,  // optional extras added on top of the coach's plan
     extraAnkles: true,
     extraPogo: false,
+    display: 'auto',    // auto | phone | tablet
+    tv: 'off',          // off | on | auto (on when an iPad is in landscape)
   },
   equipment: null,   // filled with DEFAULT_EQUIPMENT on first run
   sessions: [],      // finished workouts

@@ -9,8 +9,9 @@ import { mountVideo } from './video.js';
 import { buildReport, parseReport, setReportRPE, keepNotes } from './report.js';
 import { sync } from './sync.js';
 import { unlockAudio, sound, buzz, keepAwake, isStandalone, isIOS } from './device.js';
+import { applyLayout } from './display.js';
 
-export const BUILD = '2026-11-25b';
+export const BUILD = '2026-11-25c';
 const $app = document.getElementById('app');
 const $sheet = document.getElementById('sheet');
 
@@ -459,9 +460,9 @@ function renderWorkout() {
     const nex = data.ex[nx.exId];
     return `<main class="workout rest">${top}
       <div class="rest-wrap">
-        <p class="eyebrow">${t('rest')}</p>
+        <div class="rest-main"><p class="eyebrow">${t('rest')}</p>
         <div class="ring" style="--p:${Math.max(0, left / a.restTotal)}"><span data-rest>${fmtClock(left)}</span></div>
-        <div class="row center"><button class="btn ghost" data-a="rest-add" data-d="-15">−15 s</button><button class="btn ghost" data-a="rest-add" data-d="15">+15 s</button></div>
+        <div class="row center"><button class="btn ghost" data-a="rest-add" data-d="-15">−15 s</button><button class="btn ghost" data-a="rest-add" data-d="15">+15 s</button></div></div>
         <div class="card next-card" data-a="ex" data-ex="${nex.id}" data-block="${nx.blockId}" data-item="${nx.itemIdx}">
           <p class="eyebrow">${t('nextUp')}</p>
           <b>${esc(L(nex.name))}</b>
@@ -522,8 +523,8 @@ function renderWorkout() {
         ${esc(L(ex.name))} <span class="info">${ICON.info}</span></button>
       <div class="set-line">${sideBadge}<span>${t('setOf', { n: step.setNo, total: step.totalSets })}</span><span class="dots">${dots}</span></div>
       ${showLeftFirst ? `<p class="badge-left">${t('leftFirst')}</p>` : ''}
-      ${center}
-      ${lastTxt ? `<p class="muted center">${esc(lastTxt)}</p>` : ''}
+      <div class="wo-ctrl">${center}
+      ${lastTxt ? `<p class="muted center">${esc(lastTxt)}</p>` : ''}</div>
       ${step.note ? `<p class="note">${esc(step.note)}</p>` : ''}
       ${(L(ex.cues) || []).length ? `<ul class="cues compact">${L(ex.cues).slice(0, 3).map(c => `<li>${esc(c)}</li>`).join('')}</ul>` : ''}
     </div>
@@ -696,6 +697,8 @@ function renderSettings() {
   const weeks = Array.from({ length: weekCount() }, (_, i) => [i + 1, String(i + 1)]);
   return `<main class="settings"><header class="top"><h1>${t('settings')}</h1></header>
     <section class="card"><h2>${t('language')}</h2>${seg('lang', LANGS)}</section>
+    <section class="card"><h2>${t('displayTitle')}</h2>${seg('display', [['auto', t('dispAuto')], ['phone', t('dispPhone')], ['tablet', t('dispTablet')]])}
+      <h2>${t('tvTitle')}</h2>${seg('tv', [['off', t('off')], ['on', t('on')], ['auto', t('tvAuto')]])}<p class="muted small">${t('tvHint')}</p></section>
     <section class="card"><h2>${t('currentWeek')}</h2>${seg('week', weeks)}</section>
     <section class="card"><h2>${t('restStrength')}</h2>${seg('restStrength', secOpts([60, 90, 120, 180]))}
       <h2>${t('restCircuit')}</h2>${seg('restCircuit', secOpts([0, 30, 45, 60]))}
@@ -870,6 +873,7 @@ document.addEventListener('click', async e => {
       if (k === 'week' && v !== store.settings().week) { store.s.weekStartedAt = new Date().toISOString(); ui.dayId = null; }
       store.setSetting(k, v);
       if (k === 'lang') setLang(v);
+      if (k === 'display' || k === 'tv') applyLayout(store.settings());
       break;
     }
     case 'log-act': ui.sheet = { type: 'activity' }; break;
@@ -994,6 +998,10 @@ const ICON = {
 // ---------- boot ----------
 (async function boot() {
   setLang(store.settings().lang);
+  applyLayout(store.settings());
+  const relayout = () => { applyLayout(store.settings()); };
+  window.addEventListener('resize', relayout);
+  window.addEventListener('orientationchange', () => setTimeout(relayout, 200));
   try { await loadData(); }
   catch (err) { $app.innerHTML = `<p class="pad">Could not load plan data. ${esc(err.message)}</p>`; return; }
   if (store.s.active && !dayById(store.s.active.dayId)) store.setActive(null);

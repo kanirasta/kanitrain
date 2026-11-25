@@ -212,6 +212,13 @@ const STRINGS = {
     deleteWoConfirmGh: 'Delete this workout from the phone and from GitHub?',
     discarded: 'Discarded',
     deleted: 'Deleted',
+    displayTitle: 'Screen layout',
+    dispAuto: 'Auto',
+    dispPhone: 'Phone',
+    dispTablet: 'Tablet',
+    tvTitle: 'TV mode',
+    tvAuto: 'iPad landscape',
+    tvHint: 'Extra large, high contrast, readable from across the room. For AirPlay screen mirroring to your TV: use the iPad in landscape.',
   },
   es: {
     appName: 'kanitrain',
@@ -425,6 +432,13 @@ const STRINGS = {
     deleteWoConfirmGh: '¿Borrar este entrenamiento del teléfono y de GitHub?',
     discarded: 'Descartado',
     deleted: 'Borrado',
+    displayTitle: 'Tamaño de pantalla',
+    dispAuto: 'Automático',
+    dispPhone: 'Teléfono',
+    dispTablet: 'Tablet',
+    tvTitle: 'Modo TV',
+    tvAuto: 'iPad horizontal',
+    tvHint: 'Extra grande y con alto contraste, para leer desde lejos. Para duplicar la pantalla en la TV con AirPlay: usá el iPad en horizontal.',
   },
 };
 

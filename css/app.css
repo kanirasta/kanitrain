@@ -135,7 +135,7 @@ main { max-width: 640px; margin: 0 auto; padding: calc(var(--safe-t) + 16px) 16p
 .fresh { font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 8px; background: linear-gradient(90deg, var(--accent-soft) var(--f), transparent var(--f)); border: 1px solid var(--line); }
 
 /* workout */
-[data-screen="workout"] main { padding-bottom: calc(var(--safe-b) + 100px); min-height: 100vh; display: flex; flex-direction: column; }
+[data-screen="workout"] main { padding-bottom: calc(var(--safe-b) + 100px); min-height: calc(100vh / var(--z, 1)); display: flex; flex-direction: column; }
 .wo-top { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
 .icon-btn { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 12px; background: var(--card); border: 1px solid var(--line); }
 .wo-progress { flex: 1; text-align: center; }
@@ -200,12 +200,7 @@ main { max-width: 640px; margin: 0 auto; padding: calc(var(--safe-t) + 16px) 16p
 .seg button.on { background: var(--card); box-shadow: 0 1px 3px rgba(0,0,0,.15); font-weight: 700; }
 .settings .card h2 + .seg:last-child { margin-bottom: 0; }
 
-/* iPad and wider */
-@media (min-width: 768px) {
-  main { max-width: 760px; }
-  .equip { grid-template-columns: 1fr 1fr 1fr; }
-  .num b { font-size: 96px; }
-}
+/* iPad and TV layouts: see the end of this file. */
 .chips + p { margin-top: 10px; }
 
 .video .frame > div, .video .frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
@@ -271,3 +266,47 @@ main { max-width: 640px; margin: 0 auto; padding: calc(var(--safe-t) + 16px) 16p
 .stepper.small .num { min-width: 100px; }
 .stepper.small .num b, .workout .stepper.small .num b { font-size: 32px; letter-spacing: 0; }
 .danger-zone { text-align: center; margin: 4px 0 110px; }
+
+/* ---------- Tablet (iPad): everything scaled up by zoom (see js/display.js) ---------- */
+[data-layout="tablet"] .equip { grid-template-columns: 1fr 1fr 1fr; }
+[data-layout="tablet"][data-orient="landscape"] main,
+[data-layout="tablet"][data-orient="landscape"] .start-bar,
+[data-layout="tablet"][data-orient="landscape"] .sheet { max-width: 900px; }
+[data-layout="tablet"][data-orient="landscape"] .wo-actions { max-width: 900px; }
+/* Landscape workout: exercise info on the left, timer or reps and weight on the right. */
+[data-orient="landscape"]:is([data-layout="tablet"], [data-tv]) .wo-body {
+  display: grid; grid-template-columns: 1fr 1fr; column-gap: 32px; align-content: start; align-items: start; text-align: left; }
+[data-orient="landscape"]:is([data-layout="tablet"], [data-tv]) .wo-body > * { grid-column: 1; justify-self: start; text-align: left; }
+[data-orient="landscape"]:is([data-layout="tablet"], [data-tv]) .wo-body > .wo-ctrl { grid-column: 2; grid-row: 1 / span 8; justify-self: center; text-align: center; }
+[data-orient="landscape"]:is([data-layout="tablet"], [data-tv]) .wo-name,
+[data-orient="landscape"]:is([data-layout="tablet"], [data-tv]) .set-line { text-align: left; justify-content: flex-start; }
+[data-orient="landscape"]:is([data-layout="tablet"], [data-tv]) .cues.compact { margin: 14px 0 0; }
+[data-orient="landscape"]:is([data-layout="tablet"], [data-tv]) .rest-wrap { display: grid; grid-template-columns: 1fr 1fr; column-gap: 32px; align-items: center; }
+[data-orient="landscape"]:is([data-layout="tablet"], [data-tv]) .rest-wrap .next-card { margin-top: 0; }
+[data-orient="landscape"]:is([data-layout="tablet"], [data-tv]) .ring { margin: 8px auto 12px; }
+
+/* ---------- TV mode: high contrast, extra large, for AirPlay mirroring ---------- */
+[data-tv] {
+  --bg: #000; --card: #111; --text: #fff; --muted: #c9cdd1; --line: #3a3a3a;
+  --accent: #39e58c; --accent-ink: #00170b; --accent-soft: #0d3320;
+  --left: #ff9a3d; --left-soft: #3a1d05; --right: #6ea8ff; --right-soft: #0b1d3d;
+}
+[data-tv] body { font-weight: 500; }
+[data-tv] .wo-name { font-size: 40px; }
+[data-tv] .set-line { font-size: 22px; }
+[data-tv] .side { font-size: 20px; }
+[data-tv] .ring span { font-size: 84px; }
+[data-tv] .ring { width: 280px; height: 280px; }
+[data-tv] .num b { font-size: 96px; }
+[data-tv] .num span, [data-tv] .cues.compact, [data-tv] .tmr-line { font-size: 19px; color: var(--text); }
+[data-tv] .eyebrow { font-size: 16px; }
+[data-tv] .wo-top .muted { color: var(--text); font-size: 18px; }
+[data-tv] .bar { height: 10px; }
+[data-tv] .next-card b { font-size: 28px; }
+[data-tv][data-orient="landscape"] .wo-top { margin-bottom: 8px; }
+[data-layout="tablet"] .num b { font-size: 100px; }
+[data-layout="tablet"] .stepper.weight .num b { font-size: 60px; }
+[data-orient="landscape"]:is([data-layout="tablet"], [data-tv]) .wo-body { flex: 1; }
+[data-orient="landscape"]:is([data-layout="tablet"], [data-tv]) .wo-body > .wo-ctrl { align-self: center; }
+[data-orient="landscape"]:is([data-layout="tablet"], [data-tv]) .num b { font-size: 120px; }
+[data-tv][data-orient="landscape"] .num b { font-size: 130px; }

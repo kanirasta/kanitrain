@@ -697,6 +697,37 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     await tap('#sheet .close');
   });
 
+  // ---------- iPad and TV ----------
+  await test('layout: iPhone stays the phone layout', async () => {
+    const l = await p.evaluate(() => [document.documentElement.dataset.layout, document.documentElement.style.zoom]);
+    assert(l[0] === 'phone' && !l[1], l.join());
+  });
+  await test('layout: iPad Air gets the large layout, side by side in landscape, and TV mode', async () => {
+    const c = await browser.newContext({ ...pw.devices['iPad Pro 11'], viewport: { width: 820, height: 1180 }, screen: { width: 820, height: 1180 }, serviceWorkers: 'block' });
+    const q = await c.newPage(); q.on('pageerror', e => errors.push('iPad: ' + e.message)); q.on('dialog', d => d.accept());
+    await q.goto(base); await q.waitForSelector('.home');
+    const pt = await q.evaluate(() => [document.documentElement.dataset.layout, document.documentElement.dataset.orient, +document.documentElement.style.zoom, document.documentElement.scrollWidth <= innerWidth]);
+    assert(pt[0] === 'tablet' && pt[1] === 'portrait' && pt[2] > 1.2 && pt[3], 'portrait: ' + pt.join());
+    await q.setViewportSize({ width: 1180, height: 820 }); await sleep(200);
+    await q.tap('[data-a=start]'); await q.waitForSelector('.workout');
+    const ls = await q.evaluate(() => {
+      const body = document.querySelector('.wo-body').getBoundingClientRect(), ctrl = document.querySelector('.wo-ctrl').getBoundingClientRect(), name = document.querySelector('.wo-name').getBoundingClientRect();
+      return [document.documentElement.dataset.orient, ctrl.left > name.right - 5, ctrl.left > body.left + body.width / 3, document.documentElement.scrollWidth <= innerWidth];
+    });
+    assert(ls[0] === 'landscape' && ls[1] && ls[2] && ls[3], 'landscape not side by side: ' + ls.join());
+    await q.evaluate(() => { window.__app.store.setSetting('tv', 'auto'); window.dispatchEvent(new Event('resize')); });
+    const tv = await q.evaluate(() => [document.documentElement.hasAttribute('data-tv'), getComputedStyle(document.body).backgroundColor]);
+    assert(tv[0] && tv[1] === 'rgb(0, 0, 0)', 'TV mode: ' + tv.join());
+    await q.setViewportSize({ width: 820, height: 1180 }); await sleep(200);
+    assert(!(await q.evaluate(() => document.documentElement.hasAttribute('data-tv'))), 'TV auto should turn off in portrait');
+    await q.evaluate(() => { window.__app.store.setActive(null); window.__app.ui.screen = 'settings'; window.__app.render(); });
+    await q.tap('[data-a=set][data-k=tv][data-v=on]');
+    assert(await q.evaluate(() => document.documentElement.hasAttribute('data-tv')), 'TV on toggle');
+    await q.tap('[data-a=set][data-k=display][data-v=phone]');
+    assert(await q.evaluate(() => document.documentElement.dataset.layout === 'phone'), 'manual phone layout');
+    await c.close();
+  });
+
   await test('no JavaScript errors during the run', async () => {
     assert(errors.length === 0, errors.join(' | '));
   });
